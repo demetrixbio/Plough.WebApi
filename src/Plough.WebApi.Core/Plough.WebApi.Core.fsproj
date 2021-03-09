@@ -6,15 +6,19 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="ProblemReport.fs" />
-    <Compile Include="Server\Core.fs" />
-    <Compile Include="Server\CommonBuilder.fs" />
-    <Compile Include="Server\AuthBuilder.fs" />
-    <Compile Include="Server\DependencyInjectionBuilder.fs" />
-    <Compile Include="Server\PlainBuilder.fs" />
-    <Compile Include="Client\ApiClient.fs" />
+    <Compile Include="Core.fs" />
+    <Compile Include="CommonBuilder.fs" />
+    <Compile Include="AuthBuilder.fs" />
+    <Compile Include="DependencyInjectionBuilder.fs" />
+    <Compile Include="PlainBuilder.fs" />
+    <Compile Include="ApiClient.fs" />
     <Compile Include="ApiBuilder.fs" />
     <Content Include="paket.references" />
     <Content Include="paket.template" />
+  </ItemGroup>
+  <!-- Add source files to "fable" folder in Nuget package -->
+  <ItemGroup>
+    <Content Include="*.fsproj; **\*.fs; **\*.fsi" PackagePath="fable\" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

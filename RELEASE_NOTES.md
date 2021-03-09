@@ -3,3 +3,6 @@
 
 ## New in 0.1.1 (Released 2021/03/09)
 * Relaxed 3rd party version dependencies
+
+## New in 0.1.2 (Released 2021/03/09)
+* Flatten files in projects for Fable compilation
