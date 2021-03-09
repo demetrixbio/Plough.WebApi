@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Plough.WebApi</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="ProblemReport.fs" />
+    <Compile Include="Server\Core.fs" />
+    <Compile Include="Server\CommonBuilder.fs" />
+    <Compile Include="Server\AuthBuilder.fs" />
+    <Compile Include="Server\DependencyInjectionBuilder.fs" />
+    <Compile Include="Server\PlainBuilder.fs" />
+    <Compile Include="Client\ApiClient.fs" />
+    <Compile Include="ApiBuilder.fs" />
+    <Content Include="paket.references" />
+    <Content Include="paket.template" />
+  </ItemGroup>
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>

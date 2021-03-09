@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="ServerBuilder.fs" />
+    <Content Include="paket.references" />
+    <Content Include="paket.template" />
+  </ItemGroup>
+<!-- Uncomment for local debugging  
+  <ItemGroup>
+    <ProjectReference Include="..\Plough.WebApi.Core\Plough.WebApi.Core.fsproj" />
+  </ItemGroup>
+-->
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>

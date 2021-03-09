@@ -1,0 +1,43 @@
+source https://api.nuget.org/v3/index.json
+
+storage: none
+framework: net5.0, netstandard2.0
+
+nuget FSharp.Core >= 5.0 redirects: force
+nuget Plough.ControlFlow
+nuget Plough.WebApi.Core
+
+group core
+    framework: net5.0, netstandard2.0
+    source https://nuget.org/api/v2
+    storage:none
+    nuget Thoth.Json.Net
+    nuget Thoth.Json
+
+group fable_client
+    framework: netstandard2.0
+    source https://nuget.org/api/v2
+    storage:none
+    
+    nuget Fable.Core
+    nuget Fable.Fetch
+    
+group dotnet_client
+    framework: net5.0
+    source https://nuget.org/api/v2
+    storage:none
+    
+group server
+    framework: net5.0
+    source https://nuget.org/api/v2
+    storage:none
+    
+    nuget Giraffe
+    nuget Plough.WebApi.Server.Giraffe
+    nuget System.IdentityModel.Tokens.Jwt
+    nuget Microsoft.AspNetCore.Authentication.Cookies
+    nuget Microsoft.AspNetCore.Authentication.JwtBearer
+    nuget Microsoft.AspNetCore.Authentication.OAuth
+    nuget AWSSDK.CognitoIdentityProvider
+    nuget AWSSDK.KeyManagementService
+    nuget Amazon.AspNetCore.DataProtection.SSM

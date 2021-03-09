@@ -1,0 +1,5 @@
+FSharp.Core
+Plough.WebApi.Core
+
+group server
+    Giraffe

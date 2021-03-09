@@ -1,0 +1,6 @@
+FSharp.Core
+Plough.ControlFlow
+
+group core
+    Thoth.Json.Net
+    Thoth.Json

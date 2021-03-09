@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="KmsFileProvider.fs" />
+    <Compile Include="Literals.fs" />
+    <Compile Include="Policies.fs" />
+    <Compile Include="OAuthHandler.fs" />
+    <Compile Include="AuthConfig.fs" />
+    <Compile Include="Identity.fs" />
+    <Compile Include="AuthenticationBuilder.fs" />
+    <Compile Include="ServerBuilder.fs" />
+    <Compile Include="Endpoints.fs" />
+    <Content Include="paket.references" />
+    <Content Include="paket.template" />
+  </ItemGroup>
+  <!-- Uncomment for local debugging  
+    <ItemGroup>
+      <ProjectReference Include="..\Plough.WebApi.Server.Giraffe\Plough.WebApi.Server.Giraffe.fsproj" />
+    </ItemGroup>
+  -->
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>
