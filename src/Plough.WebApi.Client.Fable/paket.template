@@ -1,6 +1,6 @@
 type file
 id Plough.WebApi.Client.Fable
-version 0.1.2
+version 0.1.3
 authors Demetrix
 owners Demetrix
 title Plough.WebApi.Client.Fable
@@ -13,7 +13,7 @@ copyright Demetrix 2021
 tags fsharp plough
 dependencies
   FSharp.Core >= 5.0
-  Plough.WebApi.Core >= 0.1.2
+  Plough.WebApi.Core >= 0.1.3
   Fable.Core >= 3.2.4
   Fable.Fetch >= 2.2
   

@@ -1,6 +1,4 @@
 FSharp.Core
 Plough.WebApi.Core
-
-group fable_client
-    Fable.Core
-    Fable.Fetch
+Fable.Core
+Fable.Fetch

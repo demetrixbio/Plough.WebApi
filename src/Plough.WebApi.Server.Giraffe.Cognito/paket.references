@@ -1,11 +1,10 @@
 FSharp.Core
-
-group server
-    Plough.WebApi.Server.Giraffe
-    System.IdentityModel.Tokens.Jwt
-    Microsoft.AspNetCore.Authentication.Cookies
-    Microsoft.AspNetCore.Authentication.JwtBearer
-    Microsoft.AspNetCore.Authentication.OAuth
-    AWSSDK.CognitoIdentityProvider
-    AWSSDK.KeyManagementService
-    Amazon.AspNetCore.DataProtection.SSM
+Plough.WebApi.Core
+Plough.WebApi.Server.Giraffe
+System.IdentityModel.Tokens.Jwt
+Microsoft.AspNetCore.Authentication.Cookies
+Microsoft.AspNetCore.Authentication.JwtBearer
+Microsoft.AspNetCore.Authentication.OAuth
+AWSSDK.CognitoIdentityProvider
+AWSSDK.KeyManagementService
+Amazon.AspNetCore.DataProtection.SSM
