@@ -9,3 +9,6 @@
 
 ## New in 0.1.3 (Released 2021/03/10)
 * net5/netstandard packages for single file publish conflicts
+
+## New in 0.1.4 (Released 2021/03/10)
+* Plough.Webapi.[Core|Client.Dotnet|Client.Fable] netstandard packages

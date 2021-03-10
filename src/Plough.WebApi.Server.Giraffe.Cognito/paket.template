@@ -1,6 +1,6 @@
 type file
 id Plough.WebApi.Server.Giraffe.Cognito
-version 0.1.3
+version 0.1.4
 authors Demetrix
 owners Demetrix
 title Plough.WebApi.Server.Giraffe.Cognito
@@ -13,7 +13,7 @@ copyright Demetrix 2021
 tags fsharp plough
 dependencies
   FSharp.Core >= 5.0
-  Plough.WebApi.Server.Giraffe >= 0.1.3
+  Plough.WebApi.Server.Giraffe >= 0.1.4
   System.IdentityModel.Tokens.Jwt >= 6.8
   Microsoft.AspNetCore.Authentication.Cookies >= 2.2
   Microsoft.AspNetCore.Authentication.JwtBearer >= 5.0.4

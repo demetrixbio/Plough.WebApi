@@ -1,6 +1,6 @@
 type file
 id Plough.WebApi.Core
-version 0.1.3
+version 0.1.4
 authors Demetrix
 owners Demetrix
 title Plough.WebApi.Core
