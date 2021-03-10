@@ -3,10 +3,11 @@ source https://api.nuget.org/v3/index.json
 storage: none
 framework: netstandard2.0, net5
 
-nuget FSharp.Core >= 5.0 redirects: force
-nuget Plough.ControlFlow
-nuget Plough.WebApi.Core >= 0.1.4
-nuget Plough.WebApi.Server.Giraffe >= 0.1.4
+nuget FSharp.Core = 4.7.2
+nuget Plough.ControlFlow >= 0.4.1
+nuget Plough.WebApi.Core >= 0.1.5
+nuget Plough.WebApi.Server.Giraffe >= 0.1.5
+
 nuget Thoth.Json.Net
 nuget Thoth.Json
 nuget Fable.Core
