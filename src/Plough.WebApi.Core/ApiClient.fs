@@ -52,41 +52,40 @@ open Core
 
 // The members of this class must be inlined so Fable can get the generic info
 type ApiClient(get, post, getBinary : string -> Task<Result<byte [], string>>, postBinary: byte[] -> string -> Task<Result<string,string>>) =
-#if FABLE_COMPILER
-    member inline x.Get<'response>(relativeUrl, ?arbitraryType: bool) =
-#else
-    member x.Get<'response>(relativeUrl, ?arbitraryType: bool) =
-#endif
-        let ofJson =
-            match arbitraryType with
-            | Some true -> (decoder<'response>, Either.succeed) ||> ofJson
-            | _ -> (successDecoder decoder<'response>, Ok) ||> ofJson
-        send ofJson relativeUrl get
+    member
+        #if FABLE_COMPILER
+        inline
+        #endif
+        x.Get<'response>(relativeUrl, ?arbitraryType: bool) =
+            let ofJson =
+                match arbitraryType with
+                | Some true -> (decoder<'response>, Either.succeed) ||> ofJson
+                | _ -> (successDecoder decoder<'response>, Ok) ||> ofJson
+            send ofJson relativeUrl get
 
-#if FABLE_COMPILER
-    member inline x.Post(relativeUrl, ?payload : 'request) =
-#else
-    member x.Post<'request, 'response>(relativeUrl, ?payload : 'request) =
-#endif
-        let fetch = payload |> Option.map (encoder<'request> >> Encode.toString 0) |> post
-        let ofJson = (successDecoder decoder<'response>, Ok) ||> ofJson        
-        send ofJson relativeUrl fetch
+    member
+        #if FABLE_COMPILER
+        inline
+        #endif
+        x.Post<'request, 'response>(relativeUrl, ?payload : 'request) =
+            let fetch = payload |> Option.map (encoder<'request> >> Encode.toString 0) |> post
+            let ofJson = (successDecoder decoder<'response>, Ok) ||> ofJson        
+            send ofJson relativeUrl fetch
         
-#if FABLE_COMPILER
-    /// Get relativeURL and return byte array (empty if not found)
-    member inline x.GetBinary(relativeUrl) : TaskEither<byte []>  =
-#else
-    member x.GetBinary<'response>(relativeUrl:string) : TaskEither<byte []>=
-#endif
-        send Either.succeed relativeUrl getBinary
+    member
+        #if FABLE_COMPILER
+        inline
+        #endif
+        x.GetBinary(relativeUrl:string) : TaskEither<byte []>=
+            send Either.succeed relativeUrl getBinary
         
-#if FABLE_COMPILER
+
     /// Send binary to relativeUrl and return JSON response
-    member inline x.PostBinary(relativeUrl, payload : byte []):TaskEither<'response> =
-#else
-    /// Send binary to relativeUrl and return JSON response
-    member x.PostBinary<'response>(relativeUrl, payload : byte []) =
-#endif
-        let fetch = payload  |> postBinary
-        let ofJson = (successDecoder decoder<'response>, Ok) ||> ofJson        
-        send ofJson relativeUrl fetch
+    member
+        #if FABLE_COMPILER
+        inline
+        #endif
+        x.PostBinary<'response>(relativeUrl, payload : byte []) =
+            let fetch = payload  |> postBinary
+            let ofJson = (successDecoder decoder<'response>, Ok) ||> ofJson        
+            send ofJson relativeUrl fetch

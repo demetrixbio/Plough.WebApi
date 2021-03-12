@@ -20,41 +20,41 @@ type ClientBuilder(baseUrl: string, client : ApiClient) =
     new (builder : ClientBuilder) =
         ClientBuilder(builder.BaseUrl, builder.Client)
     
-#if FABLE_COMPILER
-    member inline x.Get<'response>(relativeUrl : string, ?arbitraryType: bool) =
-#else
-    member x.Get<'response>(relativeUrl : string, ?arbitraryType: bool) =
-#endif
-        let url = Url.combine baseUrl relativeUrl
-        arbitraryType
-        |> Option.map (fun s -> client.Get<'response>(url, s))
-        |> Option.defaultWith (fun () -> client.Get<'response>(url))
+    member
+        #if FABLE_COMPILER
+        inline
+        #endif
+        x.Get<'response>(relativeUrl : string, ?arbitraryType: bool) =
+            let url = Url.combine baseUrl relativeUrl
+            arbitraryType
+            |> Option.map (fun s -> client.Get<'response>(url, s))
+            |> Option.defaultWith (fun () -> client.Get<'response>(url))
 
-#if FABLE_COMPILER
-    member inline x.Post(relativeUrl, ?payload : 'request) =
-#else
-    member x.Post<'request, 'response>(relativeUrl, ?payload : 'request) =
-#endif
-        let url = Url.combine baseUrl relativeUrl
-        payload
-        |> Option.map (fun s -> client.Post<'request, 'response>(url, s))
-        |> Option.defaultWith (fun () -> client.Post<'request, 'response>(url))
+    member
+        #if FABLE_COMPILER
+        inline
+        #endif
+        x.Post<'request, 'response>(relativeUrl, ?payload : 'request) =
+            let url = Url.combine baseUrl relativeUrl
+            payload
+            |> Option.map (fun s -> client.Post<'request, 'response>(url, s))
+            |> Option.defaultWith (fun () -> client.Post<'request, 'response>(url))
         
-#if FABLE_COMPILER
+
     /// Get relativeURL and return byte array (empty if not found)
-    member inline x.GetBinary(relativeUrl) : TaskEither<byte []>  =
-#else
-    member x.GetBinary<'response>(relativeUrl:string) : TaskEither<byte []>=
-#endif
-        let url = Url.combine baseUrl relativeUrl
-        client.GetBinary<'response>(url)
+    member
+        #if FABLE_COMPILER
+        inline
+        #endif
+        x.GetBinary(relativeUrl:string) : TaskEither<byte []>  =
+            let url = Url.combine baseUrl relativeUrl
+            client.GetBinary(url)
         
-#if FABLE_COMPILER
     /// Send binary to relativeUrl and return JSON response
-    member inline x.PostBinary(relativeUrl, payload : byte []):TaskEither<'response> =
-#else
-    /// Send binary to relativeUrl and return JSON response
-    member x.PostBinary<'response>(relativeUrl, payload : byte []) =
-#endif
-        let url = Url.combine baseUrl relativeUrl
-        client.PostBinary<'response>(url, payload)
+    member
+        #if FABLE_COMPILER
+        inline
+        #endif
+        x.PostBinary<'response>(relativeUrl, payload : byte []) =
+            let url = Url.combine baseUrl relativeUrl
+            client.PostBinary<'response>(url, payload)

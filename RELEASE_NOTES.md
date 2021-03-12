@@ -15,3 +15,6 @@
 
 ## New in 0.2.0 (Released 2021/03/12)
 * ServerBuilder / ClientBuilder api settled. Extracted abstract auth builder into core library
+
+## New in 0.2.1 (Released 2021/03/12)
+* Fable compatible ClientBuilder api
