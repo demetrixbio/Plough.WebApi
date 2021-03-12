@@ -1,13 +1,7 @@
 ﻿namespace Plough.WebApi.Server.Giraffe.Cognito
 
-[<CLIMutable>]
-type AuthUrlConfig =
-    { Home : string
-      IsLoggedIn : string
-      Identity : string
-      Claims : string
-      Login : string
-      Logout : string }
+open Plough.WebApi
+open Plough.WebApi.Server
 
 [<CLIMutable>]
 type CognitoConfig =
@@ -23,5 +17,5 @@ type CognitoConfig =
 type AuthConfig =
     { IsOffline : bool
       IdentityCookieName : string
-      Urls : AuthUrlConfig
+      Urls : AuthUrls
       Cognito : CognitoConfig }

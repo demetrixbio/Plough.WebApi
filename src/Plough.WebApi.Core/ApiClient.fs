@@ -1,5 +1,6 @@
-namespace Plough.WebApi
+namespace Plough.WebApi.Client
 
+open Plough.WebApi
 open Plough.ControlFlow
 
 #if FABLE_COMPILER

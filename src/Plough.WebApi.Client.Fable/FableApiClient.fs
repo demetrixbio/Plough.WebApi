@@ -3,7 +3,7 @@
 open Browser
 
 type ApiClient() =
-    inherit Plough.WebApi.ApiClient (
+    inherit Plough.WebApi.Client.ApiClient (
         get  = Core.makeAPIGetPromise,
         post = Core.makeAPIPostPromise,
         getBinary = Core.makeAPIGetBinaryPromise,

@@ -10,7 +10,7 @@ open Giraffe.ResponseWriters
 open Giraffe.Auth
 open Plough.WebApi.Server.Giraffe.Cognito.Literals
 
-type ServerBuilder<'identity, 'appIdentity, 'idpIdentity>(config : AuthConfig) =
+type ServerBuilder<'identity>(config : AuthConfig) =
     inherit Giraffe.ServerBuilder()
     
     member x.authFailedHandler : HttpHandler =
@@ -56,46 +56,45 @@ type ServerBuilder<'identity, 'appIdentity, 'idpIdentity>(config : AuthConfig) =
             ]
         ]
     
-    interface Auth.ServerBuilder<HttpContext> with
-        member x.isOffline : bool =
-            config.IsOffline
+    override x.isOffline : bool =
+        config.IsOffline
         
-        member x.authenticate : HttpHandler =
-            requiresAuthentication x.redirectToHome
+    override x.authenticate : HttpHandler =
+        requiresAuthentication x.redirectToHome
         
-        member x.authenticateJSON : HttpHandler =
-            requiresAuthentication x.authFailedHandler
+    override x.authenticateJSON : HttpHandler =
+        requiresAuthentication x.authFailedHandler
         
-        member x.isLoggedIn : HttpHandler = fun (next : HttpFunc) (ctx : HttpContext) ->
-            text (if config.IsOffline || ctx.User.Identity.IsAuthenticated then "true" else "false") next ctx
+    override x.isLoggedIn : HttpHandler = fun (next : HttpFunc) (ctx : HttpContext) ->
+        text (if config.IsOffline || ctx.User.Identity.IsAuthenticated then "true" else "false") next ctx
         
-        member x.login : HttpHandler =
-            x.challenge AuthScheme.OAuth config.Urls.Home
+    override x.login : HttpHandler =
+        x.challenge AuthScheme.OAuth config.Urls.Home
             
-        member x.logout : HttpHandler =
-            x.signOut AuthScheme.Cookie config.Urls.Home
+    override x.logout : HttpHandler =
+        x.signOut AuthScheme.Cookie config.Urls.Home
             
-        member x.requirePolicy (policy : string) : HttpHandler = fun (next : HttpFunc) (ctx : HttpContext) ->
-            task {
-                if config.IsOffline then
-                    return! next ctx
-                else
-                    return! authorizeByPolicyName policy (x.policyFailedHandler policy) next ctx
-            }
+    override x.requirePolicy (policy : string) : HttpHandler = fun (next : HttpFunc) (ctx : HttpContext) ->
+        task {
+            if config.IsOffline then
+                return! next ctx
+            else
+                return! authorizeByPolicyName policy (x.policyFailedHandler policy) next ctx
+        }
 
-        member x.identity (next : HttpFunc) (ctx : HttpContext) : HttpFuncResult =
-            task {
-                let identityContext = ctx.GetService<IIdentityContext<'identity, 'appIdentity, 'idpIdentity>>()
-                match! identityContext.getIdentity() with
-                | Ok identity ->
-                    return! json identity.Data next ctx
-                | Error failure ->
-                    return! x.errorHandler failure next ctx
-            }
+    override x.identity (next : HttpFunc) (ctx : HttpContext) : HttpFuncResult =
+        task {
+            let identityContext = ctx.GetService<IIdentityContext<'identity>>()
+            match! identityContext.getIdentity() with
+            | Ok identity ->
+                return! json identity.Data next ctx
+            | Error failure ->
+                return! x.errorHandler failure next ctx
+        }
             
-        member x.identityClaims : HttpHandler = fun (next : HttpFunc) (ctx : HttpContext) ->
-            let claimsAsPage = ctx.User.Claims
-                               |> Seq.map (fun c -> (c.Type, c.Value))
-                               |> x.claimsAsPage
-                               |> htmlView
-            claimsAsPage next ctx
+    override x.identityClaims : HttpHandler = fun (next : HttpFunc) (ctx : HttpContext) ->
+        let claimsAsPage = ctx.User.Claims
+                           |> Seq.map (fun c -> (c.Type, c.Value))
+                           |> x.claimsAsPage
+                           |> htmlView
+        claimsAsPage next ctx

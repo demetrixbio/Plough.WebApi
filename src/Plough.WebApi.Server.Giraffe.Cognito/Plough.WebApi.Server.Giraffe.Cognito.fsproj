@@ -12,14 +12,12 @@
     <Compile Include="Identity.fs" />
     <Compile Include="AuthenticationBuilder.fs" />
     <Compile Include="ServerBuilder.fs" />
-    <Compile Include="Endpoints.fs" />
     <Content Include="paket.references" />
     <Content Include="paket.template" />
   </ItemGroup>
-  <!-- Uncomment for local debugging  
-    <ItemGroup>
-      <ProjectReference Include="..\Plough.WebApi.Server.Giraffe\Plough.WebApi.Server.Giraffe.fsproj" />
-    </ItemGroup>
-  -->
+<!--  <ItemGroup>
+    <ProjectReference Include="..\Plough.WebApi.Core\Plough.WebApi.Core.fsproj" />
+    <ProjectReference Include="..\Plough.WebApi.Server.Giraffe\Plough.WebApi.Server.Giraffe.fsproj" />
+  </ItemGroup>-->
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

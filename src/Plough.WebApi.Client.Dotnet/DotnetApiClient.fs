@@ -13,7 +13,7 @@ type Auth =
     | SessionCookie of (unit -> SessionCookie)
 
 type ApiClient (auth : Auth, client, baseUrl) =
-    inherit Plough.WebApi.ApiClient (
+    inherit Plough.WebApi.Client.ApiClient (
         get  = Core.send auth client baseUrl HttpMethod.Get None,
         post = Core.send auth client baseUrl HttpMethod.Post,
         getBinary = Core.getBinaryImplementation auth client baseUrl,

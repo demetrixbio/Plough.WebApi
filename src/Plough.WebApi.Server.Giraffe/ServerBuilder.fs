@@ -38,7 +38,50 @@ type ServerBuilder() =
         | Ok success -> (json success) next ctx
         | Error failure -> x.errorHandler failure next ctx
     
+    
+    // ---------------------------
+    // Auth handling functions
+    // ---------------------------
+    abstract isOffline : bool
+    default x.isOffline = false
+    
+    abstract isLoggedIn : HttpHandler<HttpContext>
+    default x.isLoggedIn = failwith "Auth not configured"
+    
+    abstract authenticate : HttpHandler<HttpContext>
+    default x.authenticate = failwith "Auth not configured"
+
+    abstract authenticateJSON : HttpHandler<HttpContext>
+    default x.authenticateJSON = failwith "Auth not configured"
+    
+    abstract login : HttpHandler<HttpContext>
+    default x.login = failwith "Auth not configured"
+    
+    abstract logout : HttpHandler<HttpContext>
+    default x.logout = failwith "Auth not configured"
+    
+    abstract requirePolicy : policy : string -> HttpHandler<HttpContext>
+    default x.requirePolicy _policy = failwith "Auth not configured"
+    
+    abstract identityClaims : HttpHandler<HttpContext>
+    default x.identityClaims = failwith "Auth not configured"
+    
+    abstract identity : next : HttpFunc<HttpContext> -> ctx : HttpContext -> HttpFuncResult<HttpContext>
+    default x.identity _next _ctx = failwith "Auth not configured"
+    
     interface ServerBuilder<HttpContext> with
+        // ---------------------------
+        // Auth handling functions
+        // ---------------------------
+        member x.isOffline = x.isOffline
+        member x.isLoggedIn = x.isLoggedIn
+        member x.authenticate = x.authenticate
+        member x.authenticateJSON = x.authenticateJSON
+        member x.login = x.login
+        member x.logout = x.logout
+        member x.requirePolicy policy = x.requirePolicy policy
+        member x.identityClaims = x.identityClaims
+        member x.identity next ctx = x.identity next ctx
         
         // ---------------------------
         // Globally useful functions
@@ -525,17 +568,24 @@ type ServerBuilder() =
         member x.subRoutef (path : PrintfFormat<_,_,_,_, 'T>) (routeHandler : 'T -> HttpHandler) : HttpHandler =
             subRoutef path routeHandler
             
+
         // ---------------------------
-        // Common route handling functions
+        // Plain (no dependency injection) route handling functions
         // ---------------------------
-        
         member x.makeDownloadHandlerWithArg<'a> (download : DownloadWithObject<'a>) (param : 'a) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
                     let response = download param
                     return! x.fileDownloadToStatusCode response next ctx
                 }
-                                 
+        
+        member x.makeDownloadHandlerWithArgAsync<'a> (download : DownloadWithObjectAsync<'a>) (param : 'a) : HttpHandler =
+            fun (next : HttpFunc) (ctx : HttpContext) ->
+                task {
+                    let! response = param |> download
+                    return! x.fileDownloadToStatusCode response next ctx
+                }
+                            
         member x.makeDownloadHandlerNoArg (download : DownloadWithObject<unit>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
@@ -543,17 +593,18 @@ type ServerBuilder() =
                     return! x.fileDownloadToStatusCode response next ctx
                 }
             
-        member x.makeDownloadHandlerWithArgAsync<'a> (download : DownloadWithObjectAsync<'a>) (param : 'a) : HttpHandler =
-            fun (next : HttpFunc) (ctx : HttpContext) ->
-                task {
-                    let! response = param |> download
-                    return! x.fileDownloadToStatusCode response next ctx
-                }
-            
         member x.makeDownloadHandlerNoArgAsync (download : DownloadWithObjectAsync<unit>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
                     let! response = download ()
+                    return! x.fileDownloadToStatusCode response next ctx
+                }
+         
+        member x.makeDownloadHandlerWithObj<'a> (download : DownloadWithObject<'a>) : HttpHandler =
+            fun (next : HttpFunc) (ctx : HttpContext) ->
+                task {       
+                    let! input = ctx.BindJsonAsync<'a>()
+                    let response = download input
                     return! x.fileDownloadToStatusCode response next ctx
                 }
             
@@ -564,12 +615,7 @@ type ServerBuilder() =
                     let! response = download input
                     return! x.fileDownloadToStatusCode response next ctx
                 }
-    
-    // ---------------------------
-    // Plain (no dependency injection) route handling functions
-    // ---------------------------
-    interface Plain.ServerBuilder<HttpContext> with
-
+        
         member x.makeJSONHandler<'b> (call : Call<'b>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
@@ -696,11 +742,59 @@ type ServerBuilder() =
                     do! ctx.Response.Body.WriteAsync(bytes,0,bytes.Length)
                     return! next ctx
                }
+
+        // ---------------------------
+        // Dependency injection route handling functions
+        // ---------------------------
+        member x.makeDownloadHandlerWithArg<'service, 'a> (download : DownloadServiceWithObject<'service, 'a>) (param : 'a) : HttpHandler =
+            fun (next : HttpFunc) (ctx : HttpContext) ->
+                task {
+                    let service = ctx.GetService<'service>()
+                    let response = download service param
+                    return! x.fileDownloadToStatusCode response next ctx
+                }
+        
+        member x.makeDownloadHandlerWithArgAsync<'service, 'a> (download : DownloadServiceWithObjectAsync<'service, 'a>) (param : 'a) : HttpHandler =
+            fun (next : HttpFunc) (ctx : HttpContext) ->
+                task {
+                    let service = ctx.GetService<'service>()
+                    let! response = param |> download service
+                    return! x.fileDownloadToStatusCode response next ctx
+                }
+                            
+        member x.makeDownloadHandlerNoArg<'service> (download : DownloadServiceWithObject<'service, unit>) : HttpHandler =
+            fun (next : HttpFunc) (ctx : HttpContext) ->
+                task {
+                    let service = ctx.GetService<'service>()
+                    let response = download service ()
+                    return! x.fileDownloadToStatusCode response next ctx
+                }
+            
+        member x.makeDownloadHandlerNoArgAsync<'service> (download : DownloadServiceWithObjectAsync<'service, unit>) : HttpHandler =
+            fun (next : HttpFunc) (ctx : HttpContext) ->
+                task {
+                    let service = ctx.GetService<'service>()
+                    let! response = download service ()
+                    return! x.fileDownloadToStatusCode response next ctx
+                }
          
-    // ---------------------------
-    // Dependency injection route handling functions
-    // ---------------------------       
-    interface DependencyInjection.ServerBuilder<HttpContext> with
+        member x.makeDownloadHandlerWithObj<'service, 'a> (download : DownloadServiceWithObject<'service, 'a>) : HttpHandler =
+            fun (next : HttpFunc) (ctx : HttpContext) ->
+                task {
+                    let service = ctx.GetService<'service>()
+                    let! input = ctx.BindJsonAsync<'a>()
+                    let response = download service input
+                    return! x.fileDownloadToStatusCode response next ctx
+                }
+            
+        member x.makeDownloadHandlerWithObjAsync<'service, 'a> (download : DownloadServiceWithObjectAsync<'service, 'a>) : HttpHandler =
+            fun (next : HttpFunc) (ctx : HttpContext) ->
+                task {
+                    let service = ctx.GetService<'service>()
+                    let! input = ctx.BindJsonAsync<'a>()
+                    let! response = download service input
+                    return! x.fileDownloadToStatusCode response next ctx
+                }
         
         member x.makeJSONHandler<'service, 'b> (call : CallService<'service, 'b>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
@@ -709,7 +803,7 @@ type ServerBuilder() =
                     let response = call service
                     return! x.resultToHttpStatusCode response next ctx
                 }
-        
+                
         member x.makeJSONHandlerAsync<'service, 'b> (call : CallServiceAsync<'service, 'b>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
@@ -717,7 +811,7 @@ type ServerBuilder() =
                     let! response = call service
                     return! x.resultToHttpStatusCode response next ctx
                 }
-        
+                
         member x.makeJSONHandlerWithArg<'service, 'a, 'b> (call : CallServiceWithObject<'service, 'a, 'b>) (i : 'a) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
@@ -733,12 +827,12 @@ type ServerBuilder() =
                     let! response = call service i
                     return! x.resultToHttpStatusCode response next ctx
                 }
-        
+                
         member x.makeJSONHandlerWithTwoArg<'service, 'a, 'b, 'c> (call : CallServiceWithTwoObjects<'service, 'a, 'b, 'c>) (i : 'a) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let! input = ctx.BindJsonAsync<'b>()
                     let service = ctx.GetService<'service>()
+                    let! input = ctx.BindJsonAsync<'b>()
                     let response = call service i input
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -746,17 +840,17 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithTwoArgAsync<'service, 'a, 'b, 'c> (call : CallServiceWithTwoObjectsAsync<'service, 'a, 'b, 'c>) (i : 'a) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let! input = ctx.BindJsonAsync<'b>()
                     let service = ctx.GetService<'service>()
+                    let! input = ctx.BindJsonAsync<'b>()
                     let! response = call service i input
                     return! x.resultToHttpStatusCode response next ctx
                 }
-        
+                
         member x.makeJSONHandlerWithQueryParam<'service, 'a, 'b> (call : CallServiceWithObject<'service, 'a, 'b>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let queryParams = ctx.BindQueryString<'a>()
                     let service = ctx.GetService<'service>()
+                    let queryParams = ctx.BindQueryString<'a>()
                     let response = call service queryParams
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -764,44 +858,44 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithQueryParamAsync<'service, 'a, 'b> (call : CallServiceWithObjectAsync<'service, 'a, 'b>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let queryParams = ctx.BindQueryString<'a>()
                     let service = ctx.GetService<'service>()
+                    let queryParams = ctx.BindQueryString<'a>()
                     let! response = call service queryParams
                     return! x.resultToHttpStatusCode response next ctx
                 }
-        
+                
         member x.makeJSONHandlerWithArgQueryParam<'service, 'a, 'b, 'c> (call : CallServiceWithTwoObjects<'service, 'a, 'b, 'c>) (i : 'a) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let queryParams = ctx.BindQueryString<'b>()
                     let service = ctx.GetService<'service>()
+                    let queryParams = ctx.BindQueryString<'b>()
                     let response = call service i queryParams
                     return! x.resultToHttpStatusCode response next ctx
                 }
-        
+            
         member x.makeJSONHandlerWithArgQueryParamAsync<'service, 'a, 'b, 'c> (call : CallServiceWithTwoObjectsAsync<'service, 'a, 'b, 'c>) (i : 'a) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let queryParams = ctx.BindQueryString<'b>()
                     let service = ctx.GetService<'service>()
+                    let queryParams = ctx.BindQueryString<'b>()
                     let! response = call service i queryParams
                     return! x.resultToHttpStatusCode response next ctx
                 }
-        
+                
         member x.makeJSONHandlerWithObj<'service, 'a, 'b> (call : CallServiceWithObject<'service, 'a, 'b>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let! input = ctx.BindJsonAsync<'a>()
                     let service = ctx.GetService<'service>()
+                    let! input = ctx.BindJsonAsync<'a>()
                     let response = call service input
                     return! x.resultToHttpStatusCode response next ctx
                 }
-        
+            
         member x.makeJSONHandlerWithObjAsync<'service, 'a, 'b> (call : CallServiceWithObjectAsync<'service, 'a, 'b>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let! input = ctx.BindJsonAsync<'a>()
                     let service = ctx.GetService<'service>()
+                    let! input = ctx.BindJsonAsync<'a>()
                     let! response = call service input
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -809,17 +903,17 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithObjInt<'service, 'a, 'b> (call : CallServiceWithIntAndObject<'service, 'a, 'b>) (i : int) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let! input = ctx.BindJsonAsync<'a>()
                     let service = ctx.GetService<'service>()
+                    let! input = ctx.BindJsonAsync<'a>()
                     let response = call service i input
                     return! x.resultToHttpStatusCode response next ctx
                 }
-        
+            
         member x.makeJSONHandlerWithObjIntAsync<'service, 'a, 'b> (call : CallServiceWithIntAndObjectAsync<'service, 'a, 'b>) (i : int) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let! input = ctx.BindJsonAsync<'a>()
                     let service = ctx.GetService<'service>()
+                    let! input = ctx.BindJsonAsync<'a>()
                     let! response = call service i input
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -827,14 +921,15 @@ type ServerBuilder() =
         member x.makeBinaryPostHandlerWithArgAsync<'service, 'a, 'b> (call : 'service -> 'a -> byte [] -> TaskEither<'b>) (arg : 'a) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
+                    let service = ctx.GetService<'service>()
                     use ms = new System.IO.MemoryStream()
                     do! ctx.Request.Body.CopyToAsync(ms)
                     let input = ms.ToArray()
-                    let service = ctx.GetService<'service>()
+                    
                     let! response = call service arg input
                     return! x.resultToHttpStatusCode response next ctx
                 }
-        
+            
         member x.makeBinaryResultHandlerWithArgAsync<'service, 'a, 'b> (call : 'service -> 'a -> Task<byte []>) (arg : 'a) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {

@@ -6,13 +6,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="ProblemReport.fs" />
-    <Compile Include="Core.fs" />
-    <Compile Include="CommonBuilder.fs" />
-    <Compile Include="AuthBuilder.fs" />
-    <Compile Include="DependencyInjectionBuilder.fs" />
-    <Compile Include="PlainBuilder.fs" />
+    <Compile Include="ServerTypes.fs" />
+    <Compile Include="Auth.fs" />
+    <Compile Include="CoreServerBuilder.fs" />
+    <Compile Include="AuthServerBuilder.fs" />
+    <Compile Include="PlainServerBuilder.fs" />
+    <Compile Include="DependencyInjectionServerBuilder.fs" />
+    <Compile Include="ServerBuilder.fs" />
     <Compile Include="ApiClient.fs" />
-    <Compile Include="ApiBuilder.fs" />
+    <Compile Include="ClientBuilder.fs" />
     <Content Include="paket.references" />
     <Content Include="paket.template" />
   </ItemGroup>

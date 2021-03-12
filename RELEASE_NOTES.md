@@ -12,3 +12,6 @@
 
 ## New in 0.1.4 (Released 2021/03/10)
 * Plough.Webapi.[Core|Client.Dotnet|Client.Fable] netstandard packages
+
+## New in 0.2.0 (Released 2021/03/12)
+* ServerBuilder / ClientBuilder api settled. Extracted abstract auth builder into core library

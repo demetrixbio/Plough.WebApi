@@ -21,7 +21,5 @@ module JwtClaimType =
     /// Scope values used that are not understood by an implementation SHOULD be ignored.
     let [<Literal>] Scope = "scope";
     let [<Literal>] ClientId = "client_id"
-    let [<Literal>] UserId = "user_id";
-    let [<Literal>] UserUid = "user_uid";
     
 type Actor = Person = 0 | System = 1

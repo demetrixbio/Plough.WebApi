@@ -1,10 +1,5 @@
 ﻿namespace Plough.WebApi.Server.Giraffe.Cognito
 
-[<CLIMutable>]
-type KmsKey =
-    { Region : string
-      KeyId : string }
-
 [<AutoOpen>]
 module KmsFileProvider =
     open System.IO
@@ -14,7 +9,7 @@ module KmsFileProvider =
     open Microsoft.Extensions.FileProviders
     
     type IFileProvider with
-        member fileProvider.AddAwsKmsDecryption(config: KmsKey) = 
+        member fileProvider.AddAwsKmsDecryption(region: RegionEndpoint, keyId : string) = 
             {
                 new IFileProvider with
                     member __.GetDirectoryContents subpath = fileProvider.GetDirectoryContents subpath
@@ -34,14 +29,14 @@ module KmsFileProvider =
                                     null 
                                 member __.CreateReadStream() = 
                                     let cfg = AmazonKeyManagementServiceConfig ()
-                                    cfg.RegionEndpoint <- RegionEndpoint.GetBySystemName(config.Region)
+                                    cfg.RegionEndpoint <- region
                                     use kmsClient = new AmazonKeyManagementServiceClient(cfg)
                                     
                                     use source = x.CreateReadStream()
                                     use memory = new MemoryStream(capacity = int source.Length)
                                     source.CopyTo(memory)
-                                    let decryptRequest = DecryptRequest (CiphertextBlob = memory, KeyId = config.KeyId)
-                                    let plainText = kmsClient.DecryptAsync(decryptRequest).Result.Plaintext;
+                                    let decryptRequest = DecryptRequest (CiphertextBlob = memory, KeyId = keyId)
+                                    let plainText = kmsClient.DecryptAsync(decryptRequest).Result.Plaintext
                                     upcast plainText
                         }
             }
