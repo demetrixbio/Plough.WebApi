@@ -18,3 +18,6 @@
 
 ## New in 0.2.1 (Released 2021/03/12)
 * Fable compatible ClientBuilder api
+
+## New in 0.2.2 (Released 2021/03/13)
+* Nuget package conflicts fixed
