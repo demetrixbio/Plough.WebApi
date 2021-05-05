@@ -1,6 +1,6 @@
 type file
 id Plough.WebApi.Server.Giraffe.Cognito
-version 0.2.2
+version 0.2.3
 authors Demetrix
 owners Demetrix
 title Plough.WebApi.Server.Giraffe.Cognito

@@ -21,3 +21,8 @@
 
 ## New in 0.2.2 (Released 2021/03/13)
 * Nuget package conflicts fixed
+
+## New in 0.2.3 (Released 2021/05/05)
+* Workaround Fable bug - client builder inheritance from non-primary constructor
+* Added support for no auth in dotnet api client
+* Added missing server builders for handlers with obj payload

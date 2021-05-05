@@ -11,6 +11,7 @@ type SessionCookie =
 type Auth =
     | AccessToken of (unit -> Either<string>)
     | SessionCookie of (unit -> SessionCookie)
+    | NoAuth
 
 type ApiClient (auth : Auth, client, baseUrl) =
     inherit Plough.WebApi.Client.ApiClient (
@@ -38,6 +39,7 @@ module internal Core =
         | SessionCookie retriever ->
             let cookie = retriever()
             requestMessage.Headers.TryAddWithoutValidation("Cookie", sprintf ".%s=%s" cookie.Name cookie.Value) |> ignore
+        | NoAuth -> ()
     
     let send auth (client : HttpClient) baseUrl =
         fun httpMethod (payload : string option) (relativeUrl : string) ->

@@ -56,6 +56,12 @@ module Builder =
         
     let inline makeJSONHandlerWithArgAsync (call : CallServiceWithObjectAsync<'service, 'a, 'b>) (i : 'a) : (#ServerBuilder<'context> -> HttpHandler<'context>) =
         fun builder -> builder.makeJSONHandlerWithArgAsync call i
+       
+    let inline makeJSONHandlerWithObj (call : CallServiceWithObject<'service, 'a, 'b>) : (#ServerBuilder<'context> -> HttpHandler<'context>) =
+        fun builder -> builder.makeJSONHandlerWithObj call
+        
+    let inline makeJSONHandlerWithObjAsync (call : CallServiceWithObjectAsync<'service, 'a, 'b>) : (#ServerBuilder<'context> -> HttpHandler<'context>) =
+        fun builder -> builder.makeJSONHandlerWithObjAsync call
         
     let inline makeJSONHandlerWithTwoArg (call : CallServiceWithTwoObjects<'service, 'a, 'b, 'c>) (i : 'a) : (#ServerBuilder<'context> -> HttpHandler<'context>) =
         fun builder -> builder.makeJSONHandlerWithTwoArg call i
@@ -86,9 +92,3 @@ module Builder =
         
     let inline makeBinaryResultHandlerWithArgAsync (call : 'service -> 'a -> Task<byte []>) (arg : 'a) : (#ServerBuilder<'context> -> HttpHandler<'context>) =
         fun builder -> builder.makeBinaryResultHandlerWithArgAsync call arg
-        
-    let inline makeJSONHandlerWithObj (call : CallServiceWithObject<'service, 'a, 'b>) : (ServerBuilder<'ctx> -> HttpHandler<'ctx>) =
-        fun builder -> builder.makeJSONHandlerWithObj call
-        
-    let inline makeJSONHandlerWithObjAsync (call : CallServiceWithObjectAsync<'service, 'a, 'b>) : (#ServerBuilder<'context> -> HttpHandler<'context>) =
-        fun builder -> builder.makeJSONHandlerWithObjAsync call

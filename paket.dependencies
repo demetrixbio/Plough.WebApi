@@ -5,8 +5,8 @@ framework: netstandard2.0, net5
 
 nuget FSharp.Core = 4.7.2
 nuget Plough.ControlFlow >= 0.4.2
-nuget Plough.WebApi.Core >= 0.2.2
-nuget Plough.WebApi.Server.Giraffe >= 0.2.2
+nuget Plough.WebApi.Core >= 0.2.3
+nuget Plough.WebApi.Server.Giraffe >= 0.2.3
 
 nuget Thoth.Json.Net
 nuget Thoth.Json

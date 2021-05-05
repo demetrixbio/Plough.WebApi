@@ -624,6 +624,12 @@ module Plain =
     let inline makeJSONHandlerAsync<'b, 'ctx> (call : CallAsync<'b>) : HttpHandlerPromise<'ctx> =
         fun builder -> (builder :> Builder.Plain.ServerBuilder<'ctx>).makeJSONHandlerAsync call
         
+    let inline makeJSONHandlerWithObj<'a, 'b, 'ctx> (call : CallWithObject<'a, 'b>) : HttpHandlerPromise<'ctx> =
+        fun builder -> (builder :> Builder.Plain.ServerBuilder<'ctx>).makeJSONHandlerWithObj call
+    
+    let inline makeJSONHandlerWithObjAsync<'a, 'b, 'ctx> (call : CallWithObjectAsync<'a, 'b>) : HttpHandlerPromise<'ctx> =
+        fun builder -> (builder :> Builder.Plain.ServerBuilder<'ctx>).makeJSONHandlerWithObjAsync call
+        
     let inline makeJSONHandlerWithArg<'a, 'b, 'ctx> (call : CallWithObject<'a, 'b>) (i : 'a) : HttpHandlerPromise<'ctx> =
         fun builder -> (builder :> Builder.Plain.ServerBuilder<'ctx>).makeJSONHandlerWithArg call i
         
@@ -686,6 +692,12 @@ module DependencyInjection =
     
     let inline makeJSONHandlerAsync<'service, 'b, 'ctx> (call : CallServiceAsync<'service, 'b>) : HttpHandlerPromise<'ctx> =
         fun builder -> (builder :> Builder.DependencyInjection.ServerBuilder<'ctx>).makeJSONHandlerAsync call
+        
+    let inline makeJSONHandlerWithObj<'service, 'a, 'b, 'ctx> (call : CallServiceWithObject<'service, 'a, 'b>) : HttpHandlerPromise<'ctx> =
+        fun builder -> (builder :> Builder.DependencyInjection.ServerBuilder<'ctx>).makeJSONHandlerWithObj call
+    
+    let inline makeJSONHandlerWithObjAsync<'service, 'a, 'b, 'ctx> (call : CallServiceWithObjectAsync<'service, 'a, 'b>) : HttpHandlerPromise<'ctx> =
+        fun builder -> (builder :> Builder.DependencyInjection.ServerBuilder<'ctx>).makeJSONHandlerWithObjAsync call
         
     let inline makeJSONHandlerWithArg<'service, 'a, 'b, 'ctx> (call : CallServiceWithObject<'service, 'a, 'b>) (i : 'a) : HttpHandlerPromise<'ctx> =
         fun builder -> (builder :> Builder.DependencyInjection.ServerBuilder<'ctx>).makeJSONHandlerWithArg call i
