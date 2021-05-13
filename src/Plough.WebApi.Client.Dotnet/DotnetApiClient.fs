@@ -38,7 +38,7 @@ module internal Core =
             requestMessage.Headers.Authorization <- AuthenticationHeaderValue("Bearer", accessToken)
         | SessionCookie retriever ->
             let cookie = retriever()
-            requestMessage.Headers.TryAddWithoutValidation("Cookie", sprintf ".%s=%s" cookie.Name cookie.Value) |> ignore
+            requestMessage.Headers.TryAddWithoutValidation("Cookie", sprintf "%s=%s" cookie.Name cookie.Value) |> ignore
         | NoAuth -> ()
     
     let send auth (client : HttpClient) baseUrl =
