@@ -26,3 +26,6 @@
 * Workaround Fable bug - client builder inheritance from non-primary constructor
 * Added support for no auth in dotnet api client
 * Added missing server builders for handlers with obj payload
+
+## New in 0.2.3 (Released 2021/05/13)
+* Fix injectAuthHeaders sets wrong cookie name
