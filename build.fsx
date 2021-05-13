@@ -44,20 +44,26 @@ Target.create "Test" (fun _ ->
 Target.create "Pack" (fun _ ->
     let release = ReleaseNotes.load "RELEASE_NOTES.md"
 
-    Paket.pack(fun p ->
-        { p with
-            ToolType = ToolType.CreateCLIToolReference()
-            BuildConfig = "Release"
-            OutputPath = "bin"
-            MinimumFromLockFile = true
-            IncludeReferencedProjects = true
-            Version = release.AssemblyVersion
-            TemplateFile = "paket.template"
-            ReleaseNotes = String.toLines release.Notes })
+    !! "src/**/paket.template"
+    |> Seq.iter(fun path ->
+      Paket.pack(fun p ->
+          { p with
+              ToolType = ToolType.CreateCLIToolReference()
+              BuildConfig = "Release"
+              OutputPath = "bin"
+              MinimumFromLockFile = true
+              IncludeReferencedProjects = true
+              Version = release.AssemblyVersion
+              TemplateFile = path
+              ReleaseNotes = String.toLines release.Notes })  
+    )
+
 )
 "Build" ==> "Pack"
 
 Target.create "Publish" (fun _ ->
+    // target not yet working
+    // dotnet nuget push Plough.WebApi.<package>.<version>.nupkg -s https://api.nuget.org/v3/index.json -k <api key>
     Paket.push(fun p ->
         { p with
             WorkingDir = "bin" })
