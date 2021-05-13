@@ -27,5 +27,5 @@
 * Added support for no auth in dotnet api client
 * Added missing server builders for handlers with obj payload
 
-## New in 0.2.3 (Released 2021/05/13)
+## New in 0.2.4 (Released 2021/05/13)
 * Fix injectAuthHeaders sets wrong cookie name
