@@ -29,3 +29,6 @@
 
 ## New in 0.2.4 (Released 2021/05/13)
 * Fix injectAuthHeaders sets wrong cookie name
+
+## New in 0.2.5 (Released 2021/06/21)
+* Fix indirect references

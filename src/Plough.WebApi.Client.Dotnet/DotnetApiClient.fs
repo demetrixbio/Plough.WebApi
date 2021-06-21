@@ -59,6 +59,7 @@ module internal Core =
                 // printfn "Call to %s did not succeed. Status code: %A. Response: \n %s" relativeUrl response.StatusCode content
                 return Error content
         } |> Async.StartAsTask
+    
     let sendBinary auth (client : HttpClient) baseUrl =
         fun (payload : byte []) (relativeUrl : string) ->
         async {
