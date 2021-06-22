@@ -33,5 +33,5 @@
 ## New in 0.2.5 (Released 2021/06/21)
 * Fix indirect references* Added missing server builders for handlers with obj payload
 
-## New in 0.3.0 (Released 2021/06/22)
+## New in 0.3.1 (Released 2021/06/22)
 * Plough.ControlFlow compatible release
