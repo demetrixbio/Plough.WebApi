@@ -15,7 +15,7 @@ open System.Net
 open Amazon.CognitoIdentityProvider
 open Amazon.CognitoIdentityProvider.Model
 open Amazon.Runtime
-open FSharp.Control.Tasks.V2.ContextInsensitive
+open FSharp.Control.Tasks
 open System.Security.Claims
 open Microsoft.AspNetCore.Authentication
 open Microsoft.AspNetCore.Authentication.OAuth

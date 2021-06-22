@@ -3,16 +3,17 @@ source https://api.nuget.org/v3/index.json
 storage: none
 framework: netstandard2.0, net5
 
-nuget FSharp.Core = 4.7.2
+nuget FSharp.Core >= 5.0.0
 nuget Plough.ControlFlow >= 0.5.1
-nuget Plough.WebApi.Core >= 0.3.1
-nuget Plough.WebApi.Server.Giraffe >= 0.3.1
+nuget Plough.WebApi.Core >= 0.3.3
+nuget Plough.WebApi.Server.Giraffe >= 0.3.2
 
+nuget Giraffe >= 5.0
 nuget Thoth.Json.Net
 nuget Thoth.Json
 nuget Fable.Core
 nuget Fable.Fetch
-nuget Giraffe
+
 nuget System.IdentityModel.Tokens.Jwt
 nuget Microsoft.AspNetCore.Authentication.Cookies
 nuget Microsoft.AspNetCore.Authentication.JwtBearer

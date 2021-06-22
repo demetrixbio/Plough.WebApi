@@ -1,6 +1,6 @@
 type file
 id Plough.WebApi.Server.Giraffe
-version 0.3.1
+version 0.3.3
 authors Demetrix
 owners Demetrix
 title Plough.WebApi.Server.Giraffe
@@ -12,9 +12,9 @@ repositoryUrl https://github.com/demetrixbio/Plough
 copyright Demetrix 2021
 tags fsharp plough
 dependencies
-  FSharp.Core >= 4.7.2
-  Plough.WebApi.Core >= 0.3.1
-  Giraffe >= 4.1
+  FSharp.Core >= 5.0.0
+  Plough.WebApi.Core >= 0.3.3
+  Giraffe >= 5.0
   
 files
   bin/Release ==> lib
