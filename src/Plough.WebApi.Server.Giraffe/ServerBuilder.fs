@@ -1,14 +1,16 @@
 ﻿namespace rec Plough.WebApi.Server.Giraffe
 
-open Giraffe
 open Plough.ControlFlow
 open Plough.WebApi
 open Plough.WebApi.Server
-open Giraffe.Core
-open Giraffe.Routing
+
 open FSharp.Control.Tasks
 open System.Globalization
 open Microsoft.AspNetCore.Http
+open Giraffe.Core
+open Giraffe.ModelBinding
+open Giraffe.ResponseWriters
+open Giraffe.Routing
 open Thoth.Json.Net
 
 type ServerBuilder() =
@@ -600,7 +602,7 @@ type ServerBuilder() =
          
         member x.makeDownloadHandlerWithObj<'a> (download : DownloadWithObject<'a>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
-                task {
+                task {       
                     let! input = ctx.BindJsonAsync<'a>()
                     let response = download input
                     return! x.fileDownloadToStatusCode response next ctx

@@ -38,3 +38,6 @@
 
 ## New in 0.3.3 (Released 2021/06/22)
 * FSharp.Core >= 5.0. Bumped version of Giraffe to 5.0 due to breaking changes
+
+## New in 0.3.4 (Released 2021/06/22)
+* FSharp.Core relaxed to 4.7.2 due to single file publish bug. Downgrade version of Giraffe to 4.1 due to breaking changes in 5.0 and dependency on FSharp.Core 5.0.1
