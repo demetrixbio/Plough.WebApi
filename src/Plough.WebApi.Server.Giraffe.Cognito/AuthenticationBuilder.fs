@@ -28,6 +28,7 @@ module AuthenticationBuilderExtensions =
             this
                 .AddCookie(AuthScheme.Cookie, fun options ->
                     options.Cookie.Name <- config.IdentityCookieName
+                    options.Cookie.Domain <- config.Domain
                     options.LoginPath  <- PathString config.Urls.Login
                     options.LogoutPath <- PathString config.Urls.Logout
                     bindDynamicSchemaSelection options)

@@ -41,3 +41,6 @@
 
 ## New in 0.3.4 (Released 2021/06/22)
 * FSharp.Core relaxed to 4.7.2 due to single file publish bug. Downgrade version of Giraffe to 4.1 due to breaking changes in 5.0 and dependency on FSharp.Core 5.0.1
+
+## New in 0.4.0 (Released 2021/09/30)
+* Add support to share cookie across subdomains

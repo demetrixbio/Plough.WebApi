@@ -17,5 +17,6 @@ type CognitoConfig =
 type AuthConfig =
     { IsOffline : bool
       IdentityCookieName : string
+      Domain : string
       Urls : AuthUrls
       Cognito : CognitoConfig }
