@@ -52,7 +52,7 @@ type ClientBuilder(init : ClientBuilderInit) =
         #if FABLE_COMPILER
         inline
         #endif
-        x.GetBinary(relativeUrl:string) : TaskEither<byte []>  =
+        x.GetBinary(relativeUrl:string) =
             let url = Url.combine x.BaseUrl relativeUrl
             x.Client.GetBinary(url)
         
