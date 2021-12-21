@@ -5,6 +5,9 @@ open Plough.ControlFlow
 
 #if FABLE_COMPILER
 open Thoth.Json
+
+type Task<'T> = Async<'T>
+type TaskEither<'T> = Async<Either<'T>>
 #else
 open Thoth.Json.Net
 #endif
@@ -52,6 +55,11 @@ open Core
 
 // The members of this class must be inlined so Fable can get the generic info
 type ApiClient(get, post, getBinary : string -> Task<Result<byte [], string>>, postBinary: byte[] -> string -> Task<Result<string,string>>) =
+    member x.GetRaw = get
+    member x.PostRaw = post
+    member x.GetBinaryRaw = getBinary
+    member x.PostBinaryRaw = postBinary
+
     member
         #if FABLE_COMPILER
         inline
@@ -61,14 +69,14 @@ type ApiClient(get, post, getBinary : string -> Task<Result<byte [], string>>, p
                 match arbitraryType with
                 | Some true -> (decoder<'response>, Either.succeed) ||> ofJson
                 | _ -> (successDecoder decoder<'response>, Ok) ||> ofJson
-            send ofJson relativeUrl get
+            send ofJson relativeUrl x.GetRaw
 
     member
         #if FABLE_COMPILER
         inline
         #endif
         x.Post<'request, 'response>(relativeUrl, ?payload : 'request) =
-            let fetch = payload |> Option.map (encoder<'request> >> Encode.toString 0) |> post
+            let fetch = payload |> Option.map (encoder<'request> >> Encode.toString 0) |> x.PostRaw
             let ofJson = (successDecoder decoder<'response>, Ok) ||> ofJson        
             send ofJson relativeUrl fetch
         
@@ -77,7 +85,7 @@ type ApiClient(get, post, getBinary : string -> Task<Result<byte [], string>>, p
         inline
         #endif
         x.GetBinary(relativeUrl:string) : TaskEither<byte []>=
-            send Either.succeed relativeUrl getBinary
+            send Either.succeed relativeUrl x.GetBinaryRaw
         
 
     /// Send binary to relativeUrl and return JSON response
@@ -86,6 +94,6 @@ type ApiClient(get, post, getBinary : string -> Task<Result<byte [], string>>, p
         inline
         #endif
         x.PostBinary<'response>(relativeUrl, payload : byte []) =
-            let fetch = payload  |> postBinary
+            let fetch = payload  |> x.PostBinaryRaw
             let ofJson = (successDecoder decoder<'response>, Ok) ||> ofJson        
             send ofJson relativeUrl fetch
