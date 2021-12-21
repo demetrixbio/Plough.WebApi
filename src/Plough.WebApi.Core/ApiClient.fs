@@ -55,45 +55,28 @@ open Core
 
 // The members of this class must be inlined so Fable can get the generic info
 type ApiClient(get, post, getBinary : string -> Task<Result<byte [], string>>, postBinary: byte[] -> string -> Task<Result<string,string>>) =
-    member x.GetRaw = get
-    member x.PostRaw = post
-    member x.GetBinaryRaw = getBinary
-    member x.PostBinaryRaw = postBinary
+    
+    // we must set raw delegates in order to allow proper inline of api - required for passing generic type info for Fable 
+    member x.Raw = {| Get = get; Post = post; GetBinary = getBinary; PostBinary = postBinary |}
 
-    member
-        #if FABLE_COMPILER
-        inline
-        #endif
-        x.Get<'response>(relativeUrl, ?arbitraryType: bool) =
+    member inline x.Get<'response>(relativeUrl, ?arbitraryType: bool) =
             let ofJson =
                 match arbitraryType with
                 | Some true -> (decoder<'response>, Either.succeed) ||> ofJson
                 | _ -> (successDecoder decoder<'response>, Ok) ||> ofJson
-            send ofJson relativeUrl x.GetRaw
+            send ofJson relativeUrl x.Raw.Get
 
-    member
-        #if FABLE_COMPILER
-        inline
-        #endif
-        x.Post<'request, 'response>(relativeUrl, ?payload : 'request) =
-            let fetch = payload |> Option.map (encoder<'request> >> Encode.toString 0) |> x.PostRaw
+    member inline x.Post<'request, 'response>(relativeUrl, ?payload : 'request) =
+            let fetch = payload |> Option.map (encoder<'request> >> Encode.toString 0) |> x.Raw.Post
             let ofJson = (successDecoder decoder<'response>, Ok) ||> ofJson        
             send ofJson relativeUrl fetch
         
-    member
-        #if FABLE_COMPILER
-        inline
-        #endif
-        x.GetBinary(relativeUrl:string) : TaskEither<byte []>=
-            send Either.succeed relativeUrl x.GetBinaryRaw
+    member inline x.GetBinary(relativeUrl:string) : TaskEither<byte []>=
+            send Either.succeed relativeUrl x.Raw.GetBinary
         
 
     /// Send binary to relativeUrl and return JSON response
-    member
-        #if FABLE_COMPILER
-        inline
-        #endif
-        x.PostBinary<'response>(relativeUrl, payload : byte []) =
-            let fetch = payload  |> x.PostBinaryRaw
+    member inline x.PostBinary<'response>(relativeUrl, payload : byte []) =
+            let fetch = payload  |> x.Raw.PostBinary
             let ofJson = (successDecoder decoder<'response>, Ok) ||> ofJson        
             send ofJson relativeUrl fetch

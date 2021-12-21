@@ -44,3 +44,6 @@
 
 ## New in 0.4.0 (Released 2021/09/30)
 * Add support to share cookie across subdomains
+
+## New in 0.4.1 (Released 2021/12/21)
+* Alfonso contrib: Raw delegates properly exposed in ApiClient for inlined GET/POST definitions, needed for Fable to pass type info.
