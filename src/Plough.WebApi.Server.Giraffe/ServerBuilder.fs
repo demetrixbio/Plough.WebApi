@@ -3,13 +3,9 @@
 open Plough.ControlFlow
 open Plough.WebApi
 open Plough.WebApi.Server
-
-open FSharp.Control.Tasks
 open System.Globalization
 open Microsoft.AspNetCore.Http
 open Giraffe.Core
-open Giraffe.ModelBinding
-open Giraffe.ResponseWriters
 open Giraffe.Routing
 open Thoth.Json.Net
 
@@ -99,7 +95,7 @@ type ServerBuilder() =
         /// </code>
         /// </example>
         /// <returns>Returns a <see cref="HttpHandler"/> function.</returns>
-        member x.warbler (f : (HttpFunc * HttpContext) -> HttpFunc -> HttpContext -> 'd) (next : HttpFunc) (ctx : HttpContext) : 'd =
+        member x.warbler (f : HttpFunc * HttpContext -> HttpFunc -> HttpContext -> 'd) (next : HttpFunc) (ctx : HttpContext) : 'd =
             warbler f next ctx
         
         /// <summary>
@@ -603,7 +599,7 @@ type ServerBuilder() =
         member x.makeDownloadHandlerWithObj<'a> (download : DownloadWithObject<'a>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {       
-                    let! input = ctx.BindJsonAsync<'a>()
+                    let! input = Giraffe.HttpContextExtensions.BindJsonAsync ctx
                     let response = download input
                     return! x.fileDownloadToStatusCode response next ctx
                 }
@@ -611,7 +607,7 @@ type ServerBuilder() =
         member x.makeDownloadHandlerWithObjAsync<'a> (download : DownloadWithObjectAsync<'a>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {       
-                    let! input = ctx.BindJsonAsync<'a>()
+                    let! input = Giraffe.HttpContextExtensions.BindJsonAsync ctx
                     let! response = download input
                     return! x.fileDownloadToStatusCode response next ctx
                 }
@@ -647,7 +643,7 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithTwoArg<'a, 'b, 'c> (call : CallWithTwoObjects<'a, 'b, 'c>) (i : 'a) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let! input = ctx.BindJsonAsync<'b>()
+                    let! input = Giraffe.HttpContextExtensions.BindJsonAsync ctx
                     let response = call i input
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -655,7 +651,7 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithTwoArgAsync<'a, 'b, 'c> (call : CallWithTwoObjectsAsync<'a, 'b, 'c>) (i : 'a) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let! input = ctx.BindJsonAsync<'b>()
+                    let! input = Giraffe.HttpContextExtensions.BindJsonAsync ctx
                     let! response = call i input
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -663,7 +659,7 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithQueryParam<'a, 'b> (call : CallWithObject<'a, 'b>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let queryParams = ctx.BindQueryString<'a>()
+                    let queryParams = Giraffe.HttpContextExtensions.BindQueryString ctx
                     let response = call queryParams
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -671,7 +667,7 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithQueryParamAsync<'a, 'b> (call : CallWithObjectAsync<'a, 'b>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let queryParams = ctx.BindQueryString<'a>()
+                    let queryParams = Giraffe.HttpContextExtensions.BindQueryString ctx
                     let! response = call queryParams
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -679,7 +675,7 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithArgQueryParam<'a, 'b, 'c> (call : CallWithTwoObjects<'a, 'b, 'c>) (i : 'a) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let queryParams = ctx.BindQueryString<'b>()
+                    let queryParams = Giraffe.HttpContextExtensions.BindQueryString ctx
                     let response = call i queryParams
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -687,7 +683,7 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithArgQueryParamAsync<'a, 'b, 'c> (call : CallWithTwoObjectsAsync<'a, 'b, 'c>) (i : 'a) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let queryParams = ctx.BindQueryString<'b>()
+                    let queryParams = Giraffe.HttpContextExtensions.BindQueryString ctx
                     let! response = call i queryParams
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -695,7 +691,7 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithObj<'a, 'b> (call : CallWithObject<'a, 'b>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let! input = ctx.BindJsonAsync<'a>()
+                    let! input = Giraffe.HttpContextExtensions.BindJsonAsync ctx
                     let response = call input
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -703,7 +699,7 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithObjAsync<'a, 'b> (call : CallWithObjectAsync<'a, 'b>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let! input = ctx.BindJsonAsync<'a>()
+                    let! input = Giraffe.HttpContextExtensions.BindJsonAsync ctx
                     let! response = call input
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -711,7 +707,7 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithObjInt<'a, 'b> (call : CallWithIntAndObject<'a, 'b>) (i : int) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let! input = ctx.BindJsonAsync<'a>()
+                    let! input = Giraffe.HttpContextExtensions.BindJsonAsync ctx
                     let response = call i input
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -719,7 +715,7 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithObjIntAsync<'a, 'b> (call : CallWithIntAndObjectAsync<'a, 'b>) (i : int) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let! input = ctx.BindJsonAsync<'a>()
+                    let! input = Giraffe.HttpContextExtensions.BindJsonAsync ctx
                     let! response = call i input
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -749,7 +745,7 @@ type ServerBuilder() =
         member x.makeDownloadHandlerWithArg<'service, 'a> (download : DownloadServiceWithObject<'service, 'a>) (param : 'a) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let service = ctx.GetService<'service>()
+                    let service = Giraffe.HttpContextExtensions.GetService ctx
                     let response = download service param
                     return! x.fileDownloadToStatusCode response next ctx
                 }
@@ -757,7 +753,7 @@ type ServerBuilder() =
         member x.makeDownloadHandlerWithArgAsync<'service, 'a> (download : DownloadServiceWithObjectAsync<'service, 'a>) (param : 'a) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let service = ctx.GetService<'service>()
+                    let service = Giraffe.HttpContextExtensions.GetService ctx
                     let! response = param |> download service
                     return! x.fileDownloadToStatusCode response next ctx
                 }
@@ -765,7 +761,7 @@ type ServerBuilder() =
         member x.makeDownloadHandlerNoArg<'service> (download : DownloadServiceWithObject<'service, unit>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let service = ctx.GetService<'service>()
+                    let service = Giraffe.HttpContextExtensions.GetService ctx
                     let response = download service ()
                     return! x.fileDownloadToStatusCode response next ctx
                 }
@@ -773,7 +769,7 @@ type ServerBuilder() =
         member x.makeDownloadHandlerNoArgAsync<'service> (download : DownloadServiceWithObjectAsync<'service, unit>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let service = ctx.GetService<'service>()
+                    let service = Giraffe.HttpContextExtensions.GetService ctx
                     let! response = download service ()
                     return! x.fileDownloadToStatusCode response next ctx
                 }
@@ -781,8 +777,8 @@ type ServerBuilder() =
         member x.makeDownloadHandlerWithObj<'service, 'a> (download : DownloadServiceWithObject<'service, 'a>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let service = ctx.GetService<'service>()
-                    let! input = ctx.BindJsonAsync<'a>()
+                    let service = Giraffe.HttpContextExtensions.GetService ctx
+                    let! input = Giraffe.HttpContextExtensions.BindJsonAsync ctx
                     let response = download service input
                     return! x.fileDownloadToStatusCode response next ctx
                 }
@@ -790,8 +786,8 @@ type ServerBuilder() =
         member x.makeDownloadHandlerWithObjAsync<'service, 'a> (download : DownloadServiceWithObjectAsync<'service, 'a>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let service = ctx.GetService<'service>()
-                    let! input = ctx.BindJsonAsync<'a>()
+                    let service = Giraffe.HttpContextExtensions.GetService ctx
+                    let! input = Giraffe.HttpContextExtensions.BindJsonAsync ctx
                     let! response = download service input
                     return! x.fileDownloadToStatusCode response next ctx
                 }
@@ -799,7 +795,7 @@ type ServerBuilder() =
         member x.makeJSONHandler<'service, 'b> (call : CallService<'service, 'b>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let service = ctx.GetService<'service>()
+                    let service = Giraffe.HttpContextExtensions.GetService ctx
                     let response = call service
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -807,7 +803,7 @@ type ServerBuilder() =
         member x.makeJSONHandlerAsync<'service, 'b> (call : CallServiceAsync<'service, 'b>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let service = ctx.GetService<'service>()
+                    let service = Giraffe.HttpContextExtensions.GetService ctx
                     let! response = call service
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -815,7 +811,7 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithArg<'service, 'a, 'b> (call : CallServiceWithObject<'service, 'a, 'b>) (i : 'a) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let service = ctx.GetService<'service>()
+                    let service = Giraffe.HttpContextExtensions.GetService ctx
                     let response = call service i
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -823,7 +819,7 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithArgAsync<'service, 'a, 'b> (call : CallServiceWithObjectAsync<'service, 'a, 'b>) (i : 'a) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let service = ctx.GetService<'service>()
+                    let service = Giraffe.HttpContextExtensions.GetService ctx
                     let! response = call service i
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -831,8 +827,8 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithTwoArg<'service, 'a, 'b, 'c> (call : CallServiceWithTwoObjects<'service, 'a, 'b, 'c>) (i : 'a) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let service = ctx.GetService<'service>()
-                    let! input = ctx.BindJsonAsync<'b>()
+                    let service = Giraffe.HttpContextExtensions.GetService ctx
+                    let! input = Giraffe.HttpContextExtensions.BindJsonAsync ctx
                     let response = call service i input
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -840,8 +836,8 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithTwoArgAsync<'service, 'a, 'b, 'c> (call : CallServiceWithTwoObjectsAsync<'service, 'a, 'b, 'c>) (i : 'a) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let service = ctx.GetService<'service>()
-                    let! input = ctx.BindJsonAsync<'b>()
+                    let service = Giraffe.HttpContextExtensions.GetService ctx
+                    let! input = Giraffe.HttpContextExtensions.BindJsonAsync ctx
                     let! response = call service i input
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -849,8 +845,8 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithQueryParam<'service, 'a, 'b> (call : CallServiceWithObject<'service, 'a, 'b>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let service = ctx.GetService<'service>()
-                    let queryParams = ctx.BindQueryString<'a>()
+                    let service = Giraffe.HttpContextExtensions.GetService ctx
+                    let! queryParams = Giraffe.HttpContextExtensions.BindQueryString ctx
                     let response = call service queryParams
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -858,8 +854,8 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithQueryParamAsync<'service, 'a, 'b> (call : CallServiceWithObjectAsync<'service, 'a, 'b>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let service = ctx.GetService<'service>()
-                    let queryParams = ctx.BindQueryString<'a>()
+                    let service = Giraffe.HttpContextExtensions.GetService ctx
+                    let! queryParams = Giraffe.HttpContextExtensions.BindQueryString ctx
                     let! response = call service queryParams
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -867,8 +863,8 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithArgQueryParam<'service, 'a, 'b, 'c> (call : CallServiceWithTwoObjects<'service, 'a, 'b, 'c>) (i : 'a) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let service = ctx.GetService<'service>()
-                    let queryParams = ctx.BindQueryString<'b>()
+                    let service = Giraffe.HttpContextExtensions.GetService ctx
+                    let! queryParams = Giraffe.HttpContextExtensions.BindQueryString ctx
                     let response = call service i queryParams
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -876,8 +872,8 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithArgQueryParamAsync<'service, 'a, 'b, 'c> (call : CallServiceWithTwoObjectsAsync<'service, 'a, 'b, 'c>) (i : 'a) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let service = ctx.GetService<'service>()
-                    let queryParams = ctx.BindQueryString<'b>()
+                    let service = Giraffe.HttpContextExtensions.GetService ctx
+                    let! queryParams = Giraffe.HttpContextExtensions.BindQueryString ctx
                     let! response = call service i queryParams
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -885,8 +881,8 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithObj<'service, 'a, 'b> (call : CallServiceWithObject<'service, 'a, 'b>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let service = ctx.GetService<'service>()
-                    let! input = ctx.BindJsonAsync<'a>()
+                    let service = Giraffe.HttpContextExtensions.GetService ctx
+                    let! input = Giraffe.HttpContextExtensions.BindJsonAsync ctx
                     let response = call service input
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -894,8 +890,8 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithObjAsync<'service, 'a, 'b> (call : CallServiceWithObjectAsync<'service, 'a, 'b>) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let service = ctx.GetService<'service>()
-                    let! input = ctx.BindJsonAsync<'a>()
+                    let service = Giraffe.HttpContextExtensions.GetService ctx
+                    let! input = Giraffe.HttpContextExtensions.BindJsonAsync ctx
                     let! response = call service input
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -903,8 +899,8 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithObjInt<'service, 'a, 'b> (call : CallServiceWithIntAndObject<'service, 'a, 'b>) (i : int) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let service = ctx.GetService<'service>()
-                    let! input = ctx.BindJsonAsync<'a>()
+                    let service = Giraffe.HttpContextExtensions.GetService ctx
+                    let! input = Giraffe.HttpContextExtensions.BindJsonAsync ctx
                     let response = call service i input
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -912,8 +908,8 @@ type ServerBuilder() =
         member x.makeJSONHandlerWithObjIntAsync<'service, 'a, 'b> (call : CallServiceWithIntAndObjectAsync<'service, 'a, 'b>) (i : int) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let service = ctx.GetService<'service>()
-                    let! input = ctx.BindJsonAsync<'a>()
+                    let service = Giraffe.HttpContextExtensions.GetService ctx
+                    let! input = Giraffe.HttpContextExtensions.BindJsonAsync ctx
                     let! response = call service i input
                     return! x.resultToHttpStatusCode response next ctx
                 }
@@ -921,7 +917,7 @@ type ServerBuilder() =
         member x.makeBinaryPostHandlerWithArgAsync<'service, 'a, 'b> (call : 'service -> 'a -> byte [] -> TaskEither<'b>) (arg : 'a) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let service = ctx.GetService<'service>()
+                    let service = Giraffe.HttpContextExtensions.GetService ctx
                     use ms = new System.IO.MemoryStream()
                     do! ctx.Request.Body.CopyToAsync(ms)
                     let input = ms.ToArray()
@@ -933,7 +929,7 @@ type ServerBuilder() =
         member x.makeBinaryResultHandlerWithArgAsync<'service, 'a, 'b> (call : 'service -> 'a -> Task<byte []>) (arg : 'a) : HttpHandler =
             fun (next : HttpFunc) (ctx : HttpContext) ->
                 task {
-                    let service = ctx.GetService<'service>()
+                    let service = Giraffe.HttpContextExtensions.GetService ctx
                     let! bytes = call service arg
                     do! ctx.Response.Body.WriteAsync(bytes,0,bytes.Length)
                     return! next ctx

@@ -43,7 +43,7 @@ module internal Core =
     
     let send auth (client : HttpClient) baseUrl =
         fun httpMethod (payload : string option) (relativeUrl : string) ->
-        async {
+        task {
             use requestMessage = new HttpRequestMessage(httpMethod, Uri(baseUrl, relativeUrl))
             injectAuthHeaders auth requestMessage
         
@@ -58,11 +58,11 @@ module internal Core =
                 // TODO: this should probably be a parameter to client to set debugging level
                 // printfn "Call to %s did not succeed. Status code: %A. Response: \n %s" relativeUrl response.StatusCode content
                 return Error content
-        } |> Async.StartAsTask
+        }
     
     let sendBinary auth (client : HttpClient) baseUrl =
         fun (payload : byte []) (relativeUrl : string) ->
-        async {
+        task {
             use requestMessage = new HttpRequestMessage(HttpMethod.Post, Uri(baseUrl, relativeUrl))
             injectAuthHeaders auth requestMessage
             requestMessage.Content <- new ByteArrayContent(payload)
@@ -75,11 +75,11 @@ module internal Core =
                 // TODO: this should probably be a parameter to client to set debugging level
                 // printfn "Call to %s did not succeed. Status code: %A. Response: \n %s" relativeUrl response.StatusCode content
                 return Error content
-        } |> Async.StartAsTask
+        }
     
     let getBinaryImplementation auth (client : HttpClient) (baseUrl:Uri) =
         fun (relativeUrl : string) ->
-            async {
+            task {
                 use requestMessage = new HttpRequestMessage(HttpMethod.Get, Uri(baseUrl, relativeUrl))
                 injectAuthHeaders auth requestMessage
                 let! response = client.SendAsync(requestMessage) |> Async.AwaitTask
@@ -90,7 +90,7 @@ module internal Core =
                 else
                     let! errorMsg = response.Content.ReadAsStringAsync() |> Async.AwaitTask
                     return Error errorMsg
-            } |> Async.StartAsTask
+            }
             
     // http client must not store any cookies from a response
     let handler = new HttpClientHandler(UseCookies = false)

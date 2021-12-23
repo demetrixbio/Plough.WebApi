@@ -1,12 +1,10 @@
 ﻿namespace rec Plough.WebApi.Server.Giraffe.Cognito
 
-open FSharp.Control.Tasks
-open Giraffe.GiraffeViewEngine
+open Giraffe.ViewEngine
 open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Authentication
 open Plough.WebApi.Server
 open Giraffe.Core
-open Giraffe.ResponseWriters
 open Giraffe.Auth
 open Plough.WebApi.Server.Giraffe.Cognito.Literals
 
@@ -35,8 +33,8 @@ type ServerBuilder<'identity>(config : AuthConfig) =
     member x.redirectToHome : HttpHandler =
        redirectTo false config.Urls.Home
     
-    member x.htmlView (node : XmlNode) : HttpHandler =
-        setHttpHeader "Content-Type" "text/html" >=> setBodyFromString (renderHtmlDocument node)
+    member x.htmlView (htmlView : XmlNode) : HttpHandler =
+        setHttpHeader "Content-Type" "text/html; charset=utf-8" >=> setBody (RenderView.AsBytes.htmlDocument htmlView)
 
     /// Helper function to turn a sequence of claims (tuples)
     /// into a bare-bones HTML page showing them.
@@ -84,7 +82,7 @@ type ServerBuilder<'identity>(config : AuthConfig) =
 
     override x.identity (next : HttpFunc) (ctx : HttpContext) : HttpFuncResult =
         task {
-            let identityContext = ctx.GetService<IIdentityContext<'identity>>()
+            let identityContext : IIdentityContext<'identity> = Giraffe.HttpContextExtensions.GetService ctx
             match! identityContext.getIdentity() with
             | Ok identity ->
                 return! json identity.Data next ctx

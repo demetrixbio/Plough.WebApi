@@ -13,6 +13,7 @@ ProjectSection(SolutionItems) = preProject
 	paket.lock = paket.lock
 	README.md = README.md
 	RELEASE_NOTES.md = RELEASE_NOTES.md
+	.config\dotnet-tools.json = .config\dotnet-tools.json
 EndProjectSection
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Plough.WebApi.Client.Dotnet", "src\Plough.WebApi.Client.Dotnet\Plough.WebApi.Client.Dotnet.fsproj", "{209E3CFE-6019-4878-9C7C-570F2091E41C}"

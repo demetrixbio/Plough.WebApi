@@ -1,6 +1,6 @@
 type file
 id Plough.WebApi.Server.Giraffe.Cognito
-version 0.0.0
+version 1.0.0
 authors Demetrix
 owners Demetrix
 title Plough.WebApi.Server.Giraffe.Cognito
@@ -12,16 +12,16 @@ repositoryUrl https://github.com/demetrixbio/Plough
 copyright Demetrix 2021
 tags fsharp plough
 dependencies
-  FSharp.Core >= 4.7.2
-  Plough.WebApi.Core >= LOCKEDVERSION
-  Plough.WebApi.Server.Giraffe >= LOCKEDVERSION
-  System.IdentityModel.Tokens.Jwt >= 6.8
-  Microsoft.AspNetCore.Authentication.Cookies >= 2.2
-  Microsoft.AspNetCore.Authentication.JwtBearer >= 5.0.4
-  Microsoft.AspNetCore.Authentication.OAuth >= 2.2
-  AWSSDK.CognitoIdentityProvider >= 3.5.1.33
-  AWSSDK.KeyManagementService >= 3.5.2.16
-  Amazon.AspNetCore.DataProtection.SSM >= 2.0
+  FSharp.Core >= 6.0.1
+  Plough.WebApi.Core >= 1.0.0
+  Plough.WebApi.Server.Giraffe >= 1.0.0
+  System.IdentityModel.Tokens.Jwt >= 6.15.0
+  Microsoft.AspNetCore.Authentication.Cookies >= 2.2.0
+  Microsoft.AspNetCore.Authentication.JwtBearer >= 6.0.1
+  Microsoft.AspNetCore.Authentication.OAuth >= 2.2.0
+  AWSSDK.CognitoIdentityProvider >= 3.7.1.81
+  AWSSDK.KeyManagementService >= 3.7.2.54
+  Amazon.AspNetCore.DataProtection.SSM >= 2.1.0
   
 files
   bin/Release ==> lib

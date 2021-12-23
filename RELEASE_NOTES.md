@@ -47,3 +47,6 @@
 
 ## New in 0.4.1 (Released 2021/12/21)
 * Alfonso contrib: Raw delegates properly exposed in ApiClient for inlined GET/POST definitions, needed for Fable to pass type info.
+
+## New in 1.0.0 (Released 2021/12/23)
+* F#6 with native task support

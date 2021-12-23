@@ -15,7 +15,6 @@ open System.Net
 open Amazon.CognitoIdentityProvider
 open Amazon.CognitoIdentityProvider.Model
 open Amazon.Runtime
-open FSharp.Control.Tasks
 open System.Security.Claims
 open Microsoft.AspNetCore.Authentication
 open Microsoft.AspNetCore.Authentication.OAuth
@@ -113,7 +112,7 @@ type CognitoOAuthHandler (options, logger, encoder, clock) =
     
     //https://developer.okta.com/blog/2018/03/23/token-authentication-aspnetcore-complete-guide#automatic-authorization-server-metadata
     static member GetOpenIdConfigurationAsync(backchannel : HttpClient, metadataAddress : string) =
-        async {
+        task {
             if _openIdConfiguration.IsNone then
                 let htmlDocumentRetriever = HttpDocumentRetriever(backchannel)
                 let openIdConnectConfigurationRetriever = OpenIdConnectConfigurationRetriever()
