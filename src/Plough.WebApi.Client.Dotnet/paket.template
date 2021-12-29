@@ -13,7 +13,7 @@ copyright Demetrix 2021
 tags fsharp plough
 dependencies
   FSharp.Core >= 6.0.1
-  Plough.WebApi.Core >= 1.0.0
+  Plough.WebApi.Core >= 1.0.1
   
 files
   bin/Release ==> lib

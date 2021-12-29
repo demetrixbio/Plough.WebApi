@@ -13,7 +13,7 @@ copyright Demetrix 2021
 tags fsharp plough
 dependencies
   FSharp.Core >= 6.0.1
-  Plough.ControlFlow >= 1.0.0
+  Plough.ControlFlow >= 1.0.1
   Thoth.Json.Net >= 7.1.0
   Thoth.Json >= 6.0.0
 files

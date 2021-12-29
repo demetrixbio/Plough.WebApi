@@ -50,3 +50,6 @@
 
 ## New in 1.0.0 (Released 2021/12/23)
 * F#6 with native task support
+
+## New in 1.0.1 (Released 2021/12/29)
+* Brought back Ply task CE due to transaction scope problem with native task CE - https://github.com/dotnet/fsharp/issues/12556

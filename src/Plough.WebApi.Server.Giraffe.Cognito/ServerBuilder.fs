@@ -3,6 +3,7 @@
 open Giraffe.ViewEngine
 open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Authentication
+open Plough.ControlFlow
 open Plough.WebApi.Server
 open Giraffe.Core
 open Giraffe.Auth
