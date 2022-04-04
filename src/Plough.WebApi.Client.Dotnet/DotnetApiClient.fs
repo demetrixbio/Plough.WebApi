@@ -1,6 +1,8 @@
 namespace rec Plough.WebApi.Client.Dotnet
 
 open System
+open System.Threading
+open System.Threading.Tasks
 open Plough.ControlFlow
 open System.Net.Http
 
@@ -13,22 +15,39 @@ type Auth =
     | SessionCookie of (unit -> SessionCookie)
     | NoAuth
 
-type ApiClient (auth : Auth, client, baseUrl) =
-    inherit Plough.WebApi.Client.ApiClient (
-        get  = Core.send auth client baseUrl HttpMethod.Get None,
-        post = Core.send auth client baseUrl HttpMethod.Post,
-        getBinary = Core.getBinaryImplementation auth client baseUrl,
-        postBinary = Core.sendBinary auth client baseUrl    
-    )
-    
-    new(renewableAccessToken, baseUrl) = ApiClient(renewableAccessToken, Core.proprietaryClient, baseUrl)
+type [<AbstractClass; Sealed>] ApiClient =
+    static member init (auth : Auth, baseUrl : Uri, ?defaultTimeout : TimeSpan, ?ignoreSslPolicyErrors : bool, ?debugLog : bool) =
+        // http client must not store any cookies from a response
+        let handler = new HttpClientHandler(UseCookies = false)
+        // in case of issues with certificate on local env
+        if Option.defaultValue false ignoreSslPolicyErrors then
+            handler.ServerCertificateCustomValidationCallback <-
+                (fun sender certificate chain sslPolicyErrors -> true)
+        
+        // https://makolyte.com/csharp-how-to-change-the-httpclient-timeout-per-request/
+        // HttpClient with infinite timeout is used in combination with CancellationTokenSource per request
+        // therefore we can control timeout on per request basis.
+        // Default timeout for both Dotnet and Fable is specified in Plough.WebApi.Core.ApiClient
+        let httpClient = new HttpClient(handler, Timeout = Timeout.InfiniteTimeSpan)
+        
+        let debugLog = defaultArg debugLog false
+        
+        new Plough.WebApi.Client.ApiClient (
+            get  = Core.send auth httpClient baseUrl debugLog HttpMethod.Get None,
+            post = Core.send auth httpClient baseUrl debugLog HttpMethod.Post,
+            getBinary = Core.getBinaryImplementation auth httpClient baseUrl debugLog,
+            postBinary = Core.sendBinary auth httpClient baseUrl debugLog,
+            defaultTimeout = defaultTimeout,
+            dispose = httpClient.Dispose
+        )
+        
 
 [<RequireQualifiedAccess>]
 module internal Core =
     open System.Net.Http.Headers
     open System.Text
     
-    let injectAuthHeaders (auth : Auth) (requestMessage : HttpRequestMessage) =
+    let private injectAuthHeaders (auth : Auth) (requestMessage : HttpRequestMessage) =
         match auth with
         | AccessToken retriever ->
             let accessToken =
@@ -38,62 +57,79 @@ module internal Core =
             requestMessage.Headers.Authorization <- AuthenticationHeaderValue("Bearer", accessToken)
         | SessionCookie retriever ->
             let cookie = retriever()
-            requestMessage.Headers.TryAddWithoutValidation("Cookie", sprintf "%s=%s" cookie.Name cookie.Value) |> ignore
+            requestMessage.Headers.TryAddWithoutValidation("Cookie", $"%s{cookie.Name}=%s{cookie.Value}") |> ignore
         | NoAuth -> ()
     
-    let send auth (client : HttpClient) baseUrl =
-        fun httpMethod (payload : string option) (relativeUrl : string) ->
+    let private logServerError (debugLog : bool) (relativeUrl : string) (statusCode : Net.HttpStatusCode) (response : string) =
+        if debugLog then
+            printfn $"Call to %s{relativeUrl} did not succeed. Status code: %A{statusCode}. Response: \n %s{response}"
+    
+    let private logClientError (debugLog : bool) (relativeUrl : string) (reason : string) =
+        if debugLog then
+            printfn $"Call to %s{relativeUrl} did not succeed. Reason: %s{reason}"
+    
+    let private sendWithTimeoutAsync (client : HttpClient) (message : HttpRequestMessage) (timeout : TimeSpan) =
         task {
-            use requestMessage = new HttpRequestMessage(httpMethod, Uri(baseUrl, relativeUrl))
-            injectAuthHeaders auth requestMessage
+            use cts = new CancellationTokenSource(timeout)
+            try
+                let! response = client.SendAsync(message, cts.Token)
+                return Ok response
+            with
+            | :? TaskCanceledException ->
+                if cts.IsCancellationRequested then
+                    return Error "User cancelled."
+                else
+                    return Error "Timed out."
+        }
         
-            if payload.IsSome then
-                requestMessage.Content <- new StringContent(payload.Value, Encoding.UTF8, "application/json")
-            
-            let! response = client.SendAsync(requestMessage) |> Async.AwaitTask
-            let! content = response.Content.ReadAsStringAsync() |> Async.AwaitTask
-            if response.IsSuccessStatusCode then
-                return Ok content
-            else
-                // TODO: this should probably be a parameter to client to set debugging level
-                // printfn "Call to %s did not succeed. Status code: %A. Response: \n %s" relativeUrl response.StatusCode content
-                return Error content
-        }
-    
-    let sendBinary auth (client : HttpClient) baseUrl =
-        fun (payload : byte []) (relativeUrl : string) ->
+    let private sendAsync (auth : Auth) (client : HttpClient) (message : HttpRequestMessage) (timeout : TimeSpan)
+                          (debugLog : bool) (relativeUrl : string) (readContent : HttpResponseMessage -> Task<'response>)  =
         task {
-            use requestMessage = new HttpRequestMessage(HttpMethod.Post, Uri(baseUrl, relativeUrl))
-            injectAuthHeaders auth requestMessage
-            requestMessage.Content <- new ByteArrayContent(payload)
-            
-            let! response = client.SendAsync(requestMessage) |> Async.AwaitTask
-            let! content = response.Content.ReadAsStringAsync() |> Async.AwaitTask
-            if response.IsSuccessStatusCode then
-                return Ok content
-            else
-                // TODO: this should probably be a parameter to client to set debugging level
-                // printfn "Call to %s did not succeed. Status code: %A. Response: \n %s" relativeUrl response.StatusCode content
-                return Error content
-        }
-    
-    let getBinaryImplementation auth (client : HttpClient) (baseUrl:Uri) =
-        fun (relativeUrl : string) ->
-            task {
-                use requestMessage = new HttpRequestMessage(HttpMethod.Get, Uri(baseUrl, relativeUrl))
-                injectAuthHeaders auth requestMessage
-                let! response = client.SendAsync(requestMessage) |> Async.AwaitTask
-
+            injectAuthHeaders auth message
+            match! sendWithTimeoutAsync client message timeout with
+            | Ok response ->
                 if response.IsSuccessStatusCode then
-                    let! content = response.Content.ReadAsByteArrayAsync() |> Async.AwaitTask
+                    let! content = readContent response
                     return Ok content
                 else
-                    let! errorMsg = response.Content.ReadAsStringAsync() |> Async.AwaitTask
-                    return Error errorMsg
-            }
-            
-    // http client must not store any cookies from a response
-    let handler = new HttpClientHandler(UseCookies = false)
-    // uncomment in case you have issues with certificate on local env
-    //handler.ServerCertificateCustomValidationCallback <- fun sender certificate chain sslPolicyErrors -> true
-    let proprietaryClient = new HttpClient(handler)
+                    let! content = response.Content.ReadAsStringAsync()
+                    logServerError debugLog relativeUrl response.StatusCode content
+                    return Error content
+            | Error error -> 
+                logClientError debugLog relativeUrl error
+                return Error error
+        }
+    
+    let send auth (client : HttpClient) (baseUrl : Uri) (debugLog : bool) =
+        fun httpMethod (payload : string option) (relativeUrl : string) (timeout : TimeSpan) ->
+        task {
+            use message = new HttpRequestMessage(httpMethod, Uri(baseUrl, relativeUrl))
+            if payload.IsSome then
+                message.Content <- new StringContent(payload.Value, Encoding.UTF8, "application/json")
+                
+            let! response =
+                sendAsync auth client message timeout debugLog relativeUrl (fun response ->
+                    response.Content.ReadAsStringAsync())
+            return response
+        }
+    
+    let sendBinary auth (client : HttpClient) (baseUrl : Uri) (debugLog : bool) =
+        fun (payload : byte []) (relativeUrl : string) (timeout : TimeSpan) ->
+        task {
+            use message = new HttpRequestMessage(HttpMethod.Post, Uri(baseUrl, relativeUrl))
+            message.Content <- new ByteArrayContent(payload)
+            let! response =
+                sendAsync auth client message timeout debugLog relativeUrl (fun response ->
+                    response.Content.ReadAsStringAsync())
+            return response
+        }
+    
+    let getBinaryImplementation auth (client : HttpClient) (baseUrl : Uri) (debugLog : bool) =
+        fun (relativeUrl : string) (timeout : TimeSpan) ->
+        task {
+            use message = new HttpRequestMessage(HttpMethod.Get, Uri(baseUrl, relativeUrl))
+            let! response =
+                sendAsync auth client message timeout debugLog relativeUrl (fun response ->
+                    response.Content.ReadAsByteArrayAsync())
+            return response
+        }
