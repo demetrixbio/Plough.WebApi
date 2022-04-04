@@ -1,5 +1,6 @@
 namespace Plough.WebApi.Client
 
+open System
 open Plough.WebApi
 open Plough.ControlFlow
 
@@ -13,33 +14,40 @@ open Thoth.Json.Net
 #endif
 
 module Core =
+    let defaultRequestTimeout = TimeSpan.FromSeconds 100
+    
+    let private decode decoder json =
+        try
+            match Decode.fromString decoder json with
+            | Ok x ->
+                Either.succeed x
+            | Error er ->
+                Either.fail (FailureMessage.Validation er)
+        with
+        | _ ->
+           Either.fail (FailureMessage.Validation $"Given an invalid json: \n%s{json}")
+    
     let ofJson decoder transform json =
-        match Decode.fromString decoder json with
-        | Ok x -> transform x
-        | Error er -> FailureMessage.Validation er |> Error
+        decode decoder json
+        |> Either.bind transform
 
     let successDecoder decoder =
         Decode.object (fun get ->
             { Data = get.Required.Field "Data" decoder
               Warnings = get.Required.Field "Warnings" (Decode.list Decode.string) })
-
-    let send ofJsonResponse relativeUrl (fetch: string -> Task<Result<'a,string>>): TaskEither<'response> =
+    
+    let send ofJsonResponse relativeUrl (timeout : TimeSpan) (fetch: string -> TimeSpan -> Task<Result<'a,string>>): TaskEither<'response> =
         async {
-            try
-                let res =
-                    fetch relativeUrl
-                    #if !FABLE_COMPILER
-                    |> Async.AwaitTask
-                    #endif
-                match! res with
-                | Ok data -> return ofJsonResponse data
-                | Error err ->
-                    let problemDecoder = Decode.Auto.generateDecoder<ProblemReport>()
-                    return ofJson problemDecoder (ProblemReport.problemReportToFailure >> Either.fail) err
-            with
-            | e ->
-                return sprintf "Call to %s failed. Ex: \n %A" relativeUrl e
-                       |> exn |> FailureMessage.ExceptionFailure |> Either.fail
+            let res =
+                fetch relativeUrl timeout
+                #if !FABLE_COMPILER
+                |> Async.AwaitTask
+                #endif
+            match! res with
+            | Ok data -> return ofJsonResponse data
+            | Error err ->
+                let problemDecoder = Decode.Auto.generateDecoder<ProblemReport>()
+                return ofJson problemDecoder (ProblemReport.problemReportToFailure >> Either.fail) err
         }
         #if !FABLE_COMPILER
         |> Async.StartAsTask
@@ -51,32 +59,51 @@ module Core =
     let inline decoder<'a> = Decode.Auto.generateDecoderCached<'a>(extra = additionalCoders)
     let inline encoder<'a> = Encode.Auto.generateEncoderCached<'a>(extra = additionalCoders)
 
-open Core
 
-// The members of this class must be inlined so Fable can get the generic info
-type ApiClient(get, post, getBinary : string -> Task<Result<byte [], string>>, postBinary: byte[] -> string -> Task<Result<string,string>>) =
-    
-    // we must set raw delegates in order to allow proper inline of api - required for passing generic type info for Fable 
-    member x.Raw = {| Get = get; Post = post; GetBinary = getBinary; PostBinary = postBinary |}
+type Fetch<'a> = string -> TimeSpan -> Task<Result<'a, string>>
 
-    member inline x.Get<'response>(relativeUrl, ?arbitraryType: bool) =
-            let ofJson =
-                match arbitraryType with
-                | Some true -> (decoder<'response>, Either.succeed) ||> ofJson
-                | _ -> (successDecoder decoder<'response>, Ok) ||> ofJson
-            send ofJson relativeUrl x.Raw.Get
 
-    member inline x.Post<'request, 'response>(relativeUrl, ?payload : 'request) =
-            let fetch = payload |> Option.map (encoder<'request> >> Encode.toString 0) |> x.Raw.Post
-            let ofJson = (successDecoder decoder<'response>, Ok) ||> ofJson        
-            send ofJson relativeUrl fetch
+// Members of this class must be inlined so Fable can get the generic info
+type ApiClient(get : Fetch<string>,
+               post : string option -> Fetch<string>,
+               getBinary : Fetch<byte[]>,
+               postBinary: byte[] -> Fetch<string>,
+               defaultTimeout : TimeSpan option,
+               dispose : unit -> unit) =
         
-    member inline x.GetBinary(relativeUrl:string) : TaskEither<byte []>=
-            send Either.succeed relativeUrl x.Raw.GetBinary
+    // we must set raw delegates in order to allow proper inline of api - required for passing generic type info for Fable 
+    member x.Raw = {|
+        Get = get
+        Post = post
+        GetBinary = getBinary
+        PostBinary = postBinary
+        DefaultTimeout = defaultArg defaultTimeout Core.defaultRequestTimeout
+    |}
+    
+    member inline x.Get<'response>(relativeUrl, ?arbitraryType: bool, ?timeout : TimeSpan) =
+        let ofJson =
+            match arbitraryType with
+            | Some true -> (Core.decoder<'response>, Either.succeed) ||> Core.ofJson
+            | _ -> (Core.successDecoder Core.decoder<'response>, Ok) ||> Core.ofJson
+            
+        Core.send ofJson relativeUrl (defaultArg timeout x.Raw.DefaultTimeout) x.Raw.Get
+
+    member inline x.Post<'request, 'response>(relativeUrl, ?payload : 'request, ?timeout : TimeSpan) =
+        let fetch = payload |> Option.map (Core.encoder<'request> >> Encode.toString 0) |> x.Raw.Post
+        let ofJson = (Core.successDecoder Core.decoder<'response>, Ok) ||> Core.ofJson
+        Core.send ofJson relativeUrl (defaultArg timeout x.Raw.DefaultTimeout) fetch
+        
+    member inline x.GetBinary(relativeUrl:string, ?timeout : TimeSpan) : TaskEither<byte []>=
+        Core.send Either.succeed relativeUrl (defaultArg timeout x.Raw.DefaultTimeout) x.Raw.GetBinary
         
 
     /// Send binary to relativeUrl and return JSON response
-    member inline x.PostBinary<'response>(relativeUrl, payload : byte []) =
-            let fetch = payload  |> x.Raw.PostBinary
-            let ofJson = (successDecoder decoder<'response>, Ok) ||> ofJson        
-            send ofJson relativeUrl fetch
+    member inline x.PostBinary<'response>(relativeUrl, payload : byte [], ?timeout : TimeSpan) =
+        let fetch = payload  |> x.Raw.PostBinary
+        let ofJson = (Core.successDecoder Core.decoder<'response>, Ok) ||> Core.ofJson        
+        Core.send ofJson relativeUrl (defaultArg timeout x.Raw.DefaultTimeout) fetch
+            
+
+    interface IDisposable with
+        member this.Dispose() = 
+            dispose ()

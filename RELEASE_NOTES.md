@@ -53,3 +53,6 @@
 
 ## New in 1.0.1 (Released 2021/12/29)
 * Brought back Ply task CE due to transaction scope problem with native task CE - https://github.com/dotnet/fsharp/issues/12556
+
+## New in 1.1.0 (Released 2022/04/04)
+* Configurable api client timeouts; separate exception handling for malformed json; optional client debug messages; optional dotnet client ssl certificate validation
