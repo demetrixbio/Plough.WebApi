@@ -16,20 +16,24 @@ type Auth =
     | NoAuth
 
 type [<AbstractClass; Sealed>] ApiClient =
-    static member init (auth : Auth, baseUrl : Uri, ?defaultTimeout : TimeSpan, ?ignoreSslPolicyErrors : bool, ?debugLog : bool) =
-        // http client must not store any cookies from a response
-        let handler = new HttpClientHandler(UseCookies = false)
-        // in case of issues with certificate on local env
-        if Option.defaultValue false ignoreSslPolicyErrors then
-            handler.ServerCertificateCustomValidationCallback <-
-                (fun sender certificate chain sslPolicyErrors -> true)
-        
-        // https://makolyte.com/csharp-how-to-change-the-httpclient-timeout-per-request/
-        // HttpClient with infinite timeout is used in combination with CancellationTokenSource per request
-        // therefore we can control timeout on per request basis.
-        // Default timeout for both Dotnet and Fable is specified in Plough.WebApi.Core.ApiClient
-        let httpClient = new HttpClient(handler, Timeout = Timeout.InfiniteTimeSpan)
-        
+    static member init (auth : Auth, baseUrl : Uri, ?defaultTimeout : TimeSpan, ?ignoreSslPolicyErrors : bool, ?debugLog : bool,?testHttpClient : HttpClient) =
+        let httpClient = 
+            testHttpClient 
+            |> Option.defaultWith (fun () ->
+                // http client must not store any cookies from a response
+                let handler = new HttpClientHandler(UseCookies = false)
+                // in case of issues with certificate on local env
+                if Option.defaultValue false ignoreSslPolicyErrors then
+                    handler.ServerCertificateCustomValidationCallback <-
+                        (fun sender certificate chain sslPolicyErrors -> true)
+                // https://makolyte.com/csharp-how-to-change-the-httpclient-timeout-per-request/
+                // HttpClient with infinite timeout is used in combination with CancellationTokenSource per request
+                // therefore we can control timeout on per request basis.
+                // Default timeout for both Dotnet and Fable is specified in Plough.WebApi.Core.ApiClient
+                let httpClient = new HttpClient(handler, Timeout = Timeout.InfiniteTimeSpan)
+                httpClient
+            )
+
         let debugLog = defaultArg debugLog false
         
         new Plough.WebApi.Client.ApiClient (
