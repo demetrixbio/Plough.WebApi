@@ -5,6 +5,7 @@ open System.Threading
 open System.Threading.Tasks
 open Plough.ControlFlow
 open System.Net.Http
+open Plough.WebApi.Client.Dotnet
 
 type SessionCookie =
     { Name : string
@@ -16,24 +17,21 @@ type Auth =
     | NoAuth
 
 type [<AbstractClass; Sealed>] ApiClient =
-    static member init (auth : Auth, baseUrl : Uri, ?defaultTimeout : TimeSpan, ?ignoreSslPolicyErrors : bool, ?debugLog : bool,?testHttpClient : HttpClient) =
-        let httpClient = 
-            testHttpClient 
-            |> Option.defaultWith (fun () ->
-                // http client must not store any cookies from a response
-                let handler = new HttpClientHandler(UseCookies = false)
-                // in case of issues with certificate on local env
-                if Option.defaultValue false ignoreSslPolicyErrors then
-                    handler.ServerCertificateCustomValidationCallback <-
-                        (fun sender certificate chain sslPolicyErrors -> true)
-                // https://makolyte.com/csharp-how-to-change-the-httpclient-timeout-per-request/
-                // HttpClient with infinite timeout is used in combination with CancellationTokenSource per request
-                // therefore we can control timeout on per request basis.
-                // Default timeout for both Dotnet and Fable is specified in Plough.WebApi.Core.ApiClient
-                let httpClient = new HttpClient(handler, Timeout = Timeout.InfiniteTimeSpan)
-                httpClient
-            )
-
+    /// <summary>Builds a new dotnet api client with specified auth, base url and default timeout.</summary>
+    /// <param name="httpClient">Http client used for handling requests.
+    /// Given client must not issue any calls before it's passed to init method, otherwise exception will be thrown upon setting default timeout.</param>
+    /// <param name="auth">Auth type - OAuth access token retrieval function / cached session cookie / none.</param>
+    /// <param name="baseUrl">The base url of api server.</param>
+    /// <param name="defaultTimeout">Default timeout for api calls. If none provided, `Plough.WebApi.Client.Core.defaultRequestTimeout` is used.</param>
+    /// <param name="debugLog">Log debug information upon making api requests.</param>
+    /// <returns>Configured api client.</returns>
+    static member private init (httpClient : HttpClient, auth : Auth, baseUrl : Uri, defaultTimeout : TimeSpan option, debugLog : bool option) =
+        // https://makolyte.com/csharp-how-to-change-the-httpclient-timeout-per-request/
+        // HttpClient with infinite timeout is used in combination with CancellationTokenSource per request
+        // therefore we can control timeout on per request basis.
+        // Default timeout for both Dotnet and Fable is specified in Plough.WebApi.Core.ApiClient
+        httpClient.Timeout <- Timeout.InfiniteTimeSpan
+        
         let debugLog = defaultArg debugLog false
         
         new Plough.WebApi.Client.ApiClient (
@@ -44,6 +42,39 @@ type [<AbstractClass; Sealed>] ApiClient =
             defaultTimeout = defaultTimeout,
             dispose = httpClient.Dispose
         )
+    
+    
+    /// <summary>Builds a new dotnet api client with specified auth, base url and default timeout.</summary>
+    /// <param name="auth">Auth type - OAuth access token retrieval function / cached session cookie / none.</param>
+    /// <param name="baseUrl">The base url of api server.</param>
+    /// <param name="httpClient">Http client used for handling requests.
+    /// Given client must not issue any calls before it's passed to init method, otherwise exception will be thrown upon setting default timeout.</param>
+    /// <param name="defaultTimeout">Default timeout for api calls. If none provided, `Plough.WebApi.Client.Core.defaultRequestTimeout` is used.</param>
+    /// <param name="debugLog">Log debug information upon making api requests.</param>
+    /// <returns>Configured api client.</returns>
+    static member init (auth : Auth, baseUrl : Uri, httpClient : HttpClient, ?defaultTimeout : TimeSpan, ?debugLog : bool) =
+        ApiClient.init(httpClient, auth, baseUrl, defaultTimeout, debugLog)
+    
+    /// <summary>Builds a new dotnet api client with specified auth, base url and default timeout.</summary>
+    /// <param name="auth">Auth type - OAuth access token retrieval function / cached session cookie / none.</param>
+    /// <param name="baseUrl">The base url of api server.</param>
+    /// <param name="defaultTimeout">Default timeout for api calls. If none provided, `Plough.WebApi.Client.Core.defaultRequestTimeout` is used.</param>
+    /// <param name="ignoreSslPolicyErrors">Ignore ssl policy errors - useful in case of local testing without properly configured server certificate.</param>
+    /// <param name="debugLog">Log debug information upon making api requests.</param>
+    /// <returns>Configured api client.</returns>
+    static member init (auth : Auth, baseUrl : Uri, ?defaultTimeout : TimeSpan, ?ignoreSslPolicyErrors : bool, ?debugLog : bool) =
+        // http client must not store any cookies from a response
+        let handler = new HttpClientHandler(UseCookies = false)
+        // in case of issues with certificate on local env
+        if Option.defaultValue false ignoreSslPolicyErrors then
+            handler.ServerCertificateCustomValidationCallback <-
+                (fun sender certificate chain sslPolicyErrors -> true)
+        // https://makolyte.com/csharp-how-to-change-the-httpclient-timeout-per-request/
+        // HttpClient with infinite timeout is used in combination with CancellationTokenSource per request
+        // therefore we can control timeout on per request basis.
+        // Default timeout for both Dotnet and Fable is specified in Plough.WebApi.Core.ApiClient
+        let httpClient = new HttpClient(handler)
+        ApiClient.init(httpClient, auth, baseUrl, defaultTimeout, debugLog)
         
 
 [<RequireQualifiedAccess>]
