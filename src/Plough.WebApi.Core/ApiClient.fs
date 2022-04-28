@@ -80,7 +80,7 @@ type ApiClient(get : Fetch<string>,
         DefaultTimeout = defaultArg defaultTimeout Core.defaultRequestTimeout
     |}
     
-    member inline x.Get<'response>(relativeUrl, ?arbitraryType: bool, ?timeout : TimeSpan) =
+    member inline x.Get<'response>(relativeUrl, arbitraryType: bool option, timeout : TimeSpan option) =
         let ofJson =
             match arbitraryType with
             | Some true -> (Core.decoder<'response>, Either.succeed) ||> Core.ofJson
@@ -88,17 +88,17 @@ type ApiClient(get : Fetch<string>,
             
         Core.send ofJson relativeUrl (defaultArg timeout x.Raw.DefaultTimeout) x.Raw.Get
 
-    member inline x.Post<'request, 'response>(relativeUrl, ?payload : 'request, ?timeout : TimeSpan) =
+    member inline x.Post<'request, 'response>(relativeUrl, payload : 'request option, timeout : TimeSpan option) =
         let fetch = payload |> Option.map (Core.encoder<'request> >> Encode.toString 0) |> x.Raw.Post
         let ofJson = (Core.successDecoder Core.decoder<'response>, Ok) ||> Core.ofJson
         Core.send ofJson relativeUrl (defaultArg timeout x.Raw.DefaultTimeout) fetch
         
-    member inline x.GetBinary(relativeUrl:string, ?timeout : TimeSpan) : TaskEither<byte []>=
+    member inline x.GetBinary(relativeUrl:string, timeout : TimeSpan option) : TaskEither<byte []>=
         Core.send Either.succeed relativeUrl (defaultArg timeout x.Raw.DefaultTimeout) x.Raw.GetBinary
         
 
     /// Send binary to relativeUrl and return JSON response
-    member inline x.PostBinary<'response>(relativeUrl, payload : byte [], ?timeout : TimeSpan) =
+    member inline x.PostBinary<'response>(relativeUrl, payload : byte [], timeout : TimeSpan option) =
         let fetch = payload  |> x.Raw.PostBinary
         let ofJson = (Core.successDecoder Core.decoder<'response>, Ok) ||> Core.ofJson        
         Core.send ofJson relativeUrl (defaultArg timeout x.Raw.DefaultTimeout) fetch
