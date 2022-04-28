@@ -1,7 +1,6 @@
 ﻿namespace rec Plough.WebApi.Client
 
 open System
-open Plough.ControlFlow
 
 module Url =
     let combine (baseUrl : string) (relativeUrl : string) =
@@ -30,21 +29,17 @@ type ClientBuilder(init : ClientBuilderInit) =
         #if FABLE_COMPILER
         inline
         #endif
-        x.Get<'response>(relativeUrl : string, ?arbitraryType: bool) =
+        x.Get<'response>(relativeUrl : string, ?arbitraryType: bool, ?timeout : TimeSpan) =
             let url = Url.combine x.BaseUrl relativeUrl
-            arbitraryType
-            |> Option.map (fun s -> x.Client.Get<'response>(url, s))
-            |> Option.defaultWith (fun () -> x.Client.Get<'response>(url))
+            x.Client.Get<'response>(url, arbitraryType, timeout)
 
     member
         #if FABLE_COMPILER
         inline
         #endif
-        x.Post<'request, 'response>(relativeUrl, ?payload : 'request) =
+        x.Post<'request, 'response>(relativeUrl, ?payload : 'request, ?timeout : TimeSpan) =
             let url = Url.combine x.BaseUrl relativeUrl
-            payload
-            |> Option.map (fun s -> x.Client.Post<'request, 'response>(url, s))
-            |> Option.defaultWith (fun () -> x.Client.Post<'request, 'response>(url))
+            x.Client.Post<'request, 'response>(url, payload, timeout)
         
 
     /// Get relativeURL and return byte array (empty if not found)
@@ -52,15 +47,15 @@ type ClientBuilder(init : ClientBuilderInit) =
         #if FABLE_COMPILER
         inline
         #endif
-        x.GetBinary(relativeUrl:string) =
+        x.GetBinary(relativeUrl:string, ?timeout : TimeSpan) =
             let url = Url.combine x.BaseUrl relativeUrl
-            x.Client.GetBinary(url)
+            x.Client.GetBinary(url, timeout)
         
     /// Send binary to relativeUrl and return JSON response
     member
         #if FABLE_COMPILER
         inline
         #endif
-        x.PostBinary<'response>(relativeUrl, payload : byte []) =
+        x.PostBinary<'response>(relativeUrl, payload : byte [], ?timeout : TimeSpan) =
             let url = Url.combine x.BaseUrl relativeUrl
-            x.Client.PostBinary<'response>(url, payload)
+            x.Client.PostBinary<'response>(url, payload, timeout)

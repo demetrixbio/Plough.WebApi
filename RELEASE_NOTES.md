@@ -56,3 +56,9 @@
 
 ## New in 1.1.0 (Released 2022/04/04)
 * Configurable api client timeouts; separate exception handling for malformed json; optional client debug messages; optional dotnet client ssl certificate validation
+
+## New in 1.1.1 (Released 2022/04/25)
+* Plough.WebApi.Client.Dotnet allows httpclient to be passed in for testing purposes
+
+## New in 1.1.2 (Released 2022/04/28)
+* ClientBuilder properly exposes optional timeout parameter

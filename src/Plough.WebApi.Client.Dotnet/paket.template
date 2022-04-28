@@ -1,6 +1,6 @@
 type file
 id Plough.WebApi.Client.Dotnet
-version 1.1.0
+version 1.1.2
 authors Demetrix
 owners Demetrix
 title Plough.WebApi.Client.Dotnet
@@ -13,7 +13,7 @@ copyright Demetrix 2021
 tags fsharp plough
 dependencies
   FSharp.Core >= 6.0.1
-  Plough.WebApi.Core >= 1.1.0
+  Plough.WebApi.Core >= 1.1.2
   
 files
   bin/Release ==> lib
