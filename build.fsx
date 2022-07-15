@@ -13,50 +13,84 @@ open Fake.IO.FileSystemOperators
 open Fake.IO.Globbing.Operators
 open Fake.Core.TargetOperators
 
+let rootDir = __SOURCE_DIRECTORY__ 
+
+let sln = rootDir </> "Plough.WebApi.sln"
+
+let srcGlob = rootDir </> "src/**/*.??proj"
+let testsGlob = rootDir </> "test/**/*.??proj"
+
+
+let distDir = rootDir </> "dist"
+let distGlob = distDir </> "*.nupkg"
+
+let isRelease (targets : Target list) =
+    targets
+    |> Seq.map(fun t -> t.Name)
+    |> Seq.exists ((=)"Release")
+
+let configuration (targets : Target list) =
+    let defaultVal = if isRelease targets then "Release" else "Debug"
+    match Environment.environVarOrDefault "CONFIGURATION" defaultVal with
+    | "Debug" -> DotNet.BuildConfiguration.Debug
+    | "Release" -> DotNet.BuildConfiguration.Release
+    | config -> DotNet.BuildConfiguration.Custom config
+
 Target.initEnvironment ()
 
+
 Target.create "Clean" (fun _ ->
-    !! "src/**/bin"
-    ++ "src/**/obj"
-    ++ "test/**/bin"
-    ++ "test/**/obj"
-    |> Shell.cleanDirs 
+    [distDir]
+    |> Shell.cleanDirs
+
+    !! srcGlob
+    ++ testsGlob
+    |> Seq.collect(fun p ->
+        ["bin";"obj"]
+        |> Seq.map(fun sp -> System.IO.Path.GetDirectoryName p </> sp ))
+    |> Shell.cleanDirs
+
+    [
+        rootDir </> "paket-files/paket.restore.cached"
+    ]
+    |> Seq.iter Shell.rm
 )
 
+
 Target.create "Restore" (fun _ ->
-    !! "src/**/*.*proj"
-    ++ "test/**/*.*proj"
+    [sln]
     |> Seq.iter (DotNet.restore id)
 )
 
 Target.create "Build" (fun _ ->
-    !! "src/**/*.*proj"
-    ++ "test/**/*.*proj"
+    [sln]
     |> Seq.iter (DotNet.build id)
 )
 
 Target.create "Test" (fun _ ->
-  !! "test/**/*.*proj"
+  [sln]
   |> Seq.iter (DotNet.test id)
 )
 
 // PUBLISH TO NUGET
-Target.create "Pack" (fun _ ->
-    let release = ReleaseNotes.load "RELEASE_NOTES.md"
 
-    !! "src/**/paket.template"
-    |> Seq.iter(fun path ->
-      Paket.pack(fun p ->
-          { p with
-              ToolType = ToolType.CreateCLIToolReference()
-              BuildConfig = "Release"
-              OutputPath = "bin"
-              MinimumFromLockFile = true
-              IncludeReferencedProjects = true
-              Version = release.AssemblyVersion
-              TemplateFile = path
-              ReleaseNotes = String.toLines release.Notes })  
-    )
+Target.create "Pack" (fun ctx ->
+    let release = ReleaseNotes.load "RELEASE_NOTES.md"
+    let releaseNotes = (String.concat "\n" release.Notes)
+    let args =
+        [
+            sprintf "/p:PackageVersion=%s" release.NugetVersion
+            sprintf "/p:PackageReleaseNotes=\"%s\"" releaseNotes
+        ]
+    DotNet.pack (fun c ->
+        { c with
+            Configuration = configuration (ctx.Context.AllExecutingTargets)
+            OutputPath = Some distDir
+            Common =
+                c.Common
+                |> DotNet.Options.withAdditionalArgs args
+        }) sln
+
 
 )
 "Build" ==> "Pack"
@@ -77,4 +111,4 @@ Target.create "All" ignore
   ==> "Test"
   ==> "All"
 
-Target.runOrDefault "All"
+Target.runOrDefaultWithArguments "All"

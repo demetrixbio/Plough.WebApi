@@ -159,10 +159,6 @@ NUGET
       System.Security.AccessControl (>= 5.0)
       System.Security.Principal.Windows (>= 5.0)
     Newtonsoft.Json (13.0.1)
-    Plough.ControlFlow (1.0.1)
-      Fable.Core (>= 3.6.1)
-      FSharp.Core (>= 4.7)
-      Ply (>= 0.3.1)
     Plough.WebApi.Core (1.1.2)
       FSharp.Core (>= 6.0.1)
       Plough.ControlFlow (>= 1.0.1)
@@ -172,9 +168,6 @@ NUGET
       FSharp.Core (>= 6.0.1)
       Giraffe (>= 5.0)
       Plough.WebApi.Core (>= 1.1.2)
-    Ply (0.3.1)
-      FSharp.Core (>= 4.6.2)
-      System.Threading.Tasks.Extensions (>= 4.5.4)
     System.Buffers (4.5.1)
     System.ComponentModel.Annotations (5.0) - restriction: || (&& (== net6.0) (< netstandard2.1)) (== netstandard2.0)
     System.Formats.Asn1 (6.0)
@@ -213,7 +206,6 @@ NUGET
       System.Runtime.CompilerServices.Unsafe (>= 6.0)
       System.Text.Encodings.Web (>= 6.0)
     System.Threading.Tasks.Extensions (4.5.4)
-      System.Runtime.CompilerServices.Unsafe (>= 4.5.3) - restriction: || (&& (== net6.0) (>= net461)) (&& (== net6.0) (< netcoreapp2.1)) (&& (== net6.0) (< netstandard1.0)) (&& (== net6.0) (< netstandard2.0)) (&& (== net6.0) (>= wp8)) (== netstandard2.0)
     System.ValueTuple (4.5) - restriction: || (== net6.0) (&& (== netstandard2.0) (>= net6.0))
     Thoth.Json (7.0)
       Fable.Core (>= 3.1.6)
@@ -227,6 +219,9 @@ NUGET
       System.Reflection.Emit.Lightweight (>= 4.3)
       System.Threading.Tasks.Extensions (>= 4.4)
       System.ValueTuple (>= 4.4)
+    Plough.ControlFlow ( 2.0.0-beta001)
+      Fable.Core (>= 3.6.1)
+      FSharp.Core (>= 6.0.1)
 
 GROUP Build
 STORAGE: NONE
