@@ -1,6 +1,6 @@
 type file
 id Plough.WebApi.Core
-version 1.1.2
+version 1.2.0
 authors Demetrix
 owners Demetrix
 title Plough.WebApi.Core
@@ -13,7 +13,7 @@ copyright Demetrix 2021
 tags fsharp plough
 dependencies
   FSharp.Core >= 6.0.1
-  Plough.ControlFlow >= 1.0.1
+  Plough.ControlFlow >= 2.0.0-beta001
   Thoth.Json.Net >= 7.1.0
   Thoth.Json >= 6.0.0
 files

@@ -3,9 +3,9 @@ storage: none
 framework: netstandard2.0, net6.0
 
 nuget FSharp.Core >= 6.0.1 lowest_matching: true
-nuget Plough.ControlFlow >=  2.0.0-beta001
-nuget Plough.WebApi.Core >= 1.1.2
-nuget Plough.WebApi.Server.Giraffe >= 1.1.2
+nuget Plough.ControlFlow >= 2.0.0-beta001
+nuget Plough.WebApi.Core >= 1.2.0
+nuget Plough.WebApi.Server.Giraffe >= 1.2.0
 
 nuget Giraffe >= 5.0.0
 nuget Thoth.Json.Net >= 7.1.0
