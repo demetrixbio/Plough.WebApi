@@ -62,3 +62,7 @@
 
 ## New in 1.1.2 (Released 2022/04/28)
 * ClientBuilder properly exposes optional timeout parameter
+
+
+## New in 1.1.3-beta001 (Released 2022/07/15)
+* Updates Plough.ControlFlow, which has native F# Task support
