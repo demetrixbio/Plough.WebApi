@@ -6,7 +6,6 @@
   <ItemGroup>
     <Compile Include="ServerBuilder.fs" />
     <Content Include="paket.references" />
-    <Content Include="paket.template" />
   </ItemGroup>
  <ItemGroup>
     <ProjectReference Include="..\Plough.WebApi.Core\Plough.WebApi.Core.fsproj" />

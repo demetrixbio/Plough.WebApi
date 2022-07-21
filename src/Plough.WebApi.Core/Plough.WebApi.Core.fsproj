@@ -16,7 +16,6 @@
     <Compile Include="ApiClient.fs" />
     <Compile Include="ClientBuilder.fs" />
     <Content Include="paket.references" />
-    <Content Include="paket.template" />
   </ItemGroup>
   <!-- Add source files to "fable" folder in Nuget package -->
   <ItemGroup>

@@ -6,7 +6,6 @@
   <ItemGroup>
     <Compile Include="FableApiClient.fs" />
     <Content Include="paket.references" />
-    <Content Include="paket.template" />
   </ItemGroup>
   <!-- Add source files to "fable" folder in Nuget package -->
   <ItemGroup>

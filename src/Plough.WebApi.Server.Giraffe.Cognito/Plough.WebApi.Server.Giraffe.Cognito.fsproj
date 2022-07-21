@@ -13,7 +13,6 @@
     <Compile Include="AuthenticationBuilder.fs" />
     <Compile Include="ServerBuilder.fs" />
     <Content Include="paket.references" />
-    <Content Include="paket.template" />
   </ItemGroup>
  <ItemGroup>
     <ProjectReference Include="..\Plough.WebApi.Server.Giraffe\Plough.WebApi.Server.Giraffe.fsproj" />
