@@ -131,7 +131,7 @@ Target.create "PublishToNuGet" (fun _ ->
         }
     )
 )
-
+let remote = Environment.environVarOrDefault "PWA_GIT_REMOTE" "origin"
 let tagFromVersionNumber versionNumber = sprintf "v%s" versionNumber
 Target.create "GitRelease" (fun _ ->
     Git.Staging.stageFile "" releaseNotesFilePath
@@ -145,7 +145,7 @@ Target.create "GitRelease" (fun _ ->
     let tag = tagFromVersionNumber releaseVersion.Value
 
     Git.Branches.tag "" tag
-    Git.Branches.pushTag "" "origin" tag
+    Git.Branches.pushTag "" remote tag
 )
 Target.create "GitHubRelease" (fun _ ->
     let token =
