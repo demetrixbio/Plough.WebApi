@@ -117,8 +117,6 @@ Target.create "Pack" (fun ctx ->
 )
 
 Target.create "PublishToNuGet" (fun _ ->
-    // target not yet working
-    // dotnet nuget push Plough.WebApi.<package>.<version>.nupkg -s https://api.nuget.org/v3/index.json -k <api key>
     Paket.push(fun p ->
         { p with
             ToolType = ToolType.CreateLocalTool()
