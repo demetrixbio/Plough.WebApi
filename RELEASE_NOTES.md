@@ -66,5 +66,5 @@
 ## New in 1.2.0 (Released 2022/07/20)
 * Updates Plough.ControlFlow, which has native F# Task support
 
-## New in 1.2.1-beta001 (Released 2022/07/20)
-* Revert Plough.ControlFlow
+## New in 1.2.1-beta002 (Released 2022/07/21)
+* [Revert Plough.ControlFlow, undo native F# task support](https://github.com/demetrixbio/Plough.WebApi/pull/5)
