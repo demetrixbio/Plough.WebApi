@@ -140,7 +140,7 @@ Target.create "GitRelease" (fun _ ->
         |> Seq.iter (Git.Staging.stageFile "" >> ignore)
 
     Git.Commit.exec "" (sprintf "VER: Bump version to %s\n\n%s" releaseVersion.Value releaseNotes.Value)
-    Git.Branches.push ""
+    Git.Branches.pushBranch "" remote ""
 
     let tag = tagFromVersionNumber releaseVersion.Value
 
