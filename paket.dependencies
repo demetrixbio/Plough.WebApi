@@ -38,6 +38,7 @@ group Build
   nuget Fake.DotNet.MSBuild
   nuget Fake.Dotnet.NuGet
   nuget Fake.DotNet.Paket
+  nuget Fake.Tools.Git
   nuget Fake.DotNet.Testing.XUnit2
   nuget Fake.IO.FileSystem
   nuget Fake.IO.Zip
