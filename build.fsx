@@ -1,11 +1,8 @@
-#r "paket:
-  nuget Fake.DotNet.Cli
-  nuget Fake.IO.FileSystem
-  nuget Fake.Core.Target
-  nuget Fake.Core.ReleaseNotes
-  nuget Fake.DotNet.Paket //"
 #load ".fake/build.fsx/intellisense.fsx"
-
+#if !FAKE
+#r "Facades/netstandard"
+#r "netstandard"
+#endif
 open Fake.Core
 open Fake.DotNet
 open Fake.IO
@@ -100,7 +97,7 @@ Target.create "Publish" (fun _ ->
     // dotnet nuget push Plough.WebApi.<package>.<version>.nupkg -s https://api.nuget.org/v3/index.json -k <api key>
     Paket.push(fun p ->
         { p with
-            WorkingDir = "bin" })
+            WorkingDir = distDir })
 )
 
 Target.create "All" ignore
