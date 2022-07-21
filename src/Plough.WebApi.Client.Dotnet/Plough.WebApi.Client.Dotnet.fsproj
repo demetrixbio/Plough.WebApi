@@ -7,11 +7,11 @@
     <Compile Include="Util.fs" />
     <Compile Include="DotnetApiClient.fs" />
   </ItemGroup>
-<!-- Uncomment for local debugging  
+<!-- Uncomment for local debugging  -->
   <ItemGroup>
     <ProjectReference Include="..\Plough.WebApi.Core\Plough.WebApi.Core.fsproj" />
   </ItemGroup>
--->
+
   <ItemGroup>
     <Content Include="paket.references" />
     <Content Include="paket.template" />
