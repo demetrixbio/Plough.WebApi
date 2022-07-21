@@ -65,3 +65,6 @@
 
 ## New in 1.2.0 (Released 2022/07/20)
 * Updates Plough.ControlFlow, which has native F# Task support
+
+## New in 1.2.1 (Released 2022/07/20)
+* Revert Plough.ControlFlow

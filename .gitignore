@@ -367,3 +367,4 @@ $RECYCLE.BIN/
 
 # Git
 *.orig
+release.ps1

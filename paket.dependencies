@@ -3,9 +3,7 @@ storage: none
 framework: netstandard2.0, net6.0
 
 nuget FSharp.Core >= 6.0.1 lowest_matching: true
-nuget Plough.ControlFlow >= 2.0.0-beta001
-nuget Plough.WebApi.Core >= 1.2.0
-nuget Plough.WebApi.Server.Giraffe >= 1.2.0
+nuget Plough.ControlFlow 1.0.1
 
 nuget Giraffe >= 5.0.0
 nuget Thoth.Json.Net >= 7.1.0
@@ -21,6 +19,8 @@ nuget AWSSDK.CognitoIdentityProvider >= 3.7.1.81
 nuget AWSSDK.KeyManagementService >= 3.7.2.54
 nuget Amazon.AspNetCore.DataProtection.SSM >= 2.1.0
 
+
+// [ FAKE GROUP ]
 group Build
   source https://api.nuget.org/v3/index.json
   framework: net6.0
@@ -38,6 +38,7 @@ group Build
   nuget Fake.DotNet.MSBuild
   nuget Fake.Dotnet.NuGet
   nuget Fake.DotNet.Paket
+  nuget Fake.Tools.Git
   nuget Fake.DotNet.Testing.XUnit2
   nuget Fake.IO.FileSystem
   nuget Fake.IO.Zip

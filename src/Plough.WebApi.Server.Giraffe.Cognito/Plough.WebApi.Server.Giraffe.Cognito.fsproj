@@ -15,9 +15,8 @@
     <Content Include="paket.references" />
     <Content Include="paket.template" />
   </ItemGroup>
-<!--  <ItemGroup>
-    <ProjectReference Include="..\Plough.WebApi.Core\Plough.WebApi.Core.fsproj" />
+ <ItemGroup>
     <ProjectReference Include="..\Plough.WebApi.Server.Giraffe\Plough.WebApi.Server.Giraffe.fsproj" />
-  </ItemGroup>-->
+  </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

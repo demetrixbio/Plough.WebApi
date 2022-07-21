@@ -1,6 +1,4 @@
 FSharp.Core
-Plough.WebApi.Core
-Plough.WebApi.Server.Giraffe
 System.IdentityModel.Tokens.Jwt
 Microsoft.AspNetCore.Authentication.Cookies
 Microsoft.AspNetCore.Authentication.JwtBearer
