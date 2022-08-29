@@ -68,3 +68,6 @@
 
 ## New in 1.2.1 (Released 2022/07/21)
 * [Revert Plough.ControlFlow, undo native F# task support](https://github.com/demetrixbio/Plough.WebApi/pull/5)
+
+## New in 1.2.2 (Released 2022/08/29)
+* Allow customizable error handling by making ServerBuilder.errorHandler abstract
