@@ -10,8 +10,9 @@ open Giraffe.Routing
 open Thoth.Json.Net
 
 type ServerBuilder() =
+    abstract errorHandler : failure: FailureMessage -> next : HttpFunc -> ctx : HttpContext -> HttpFuncResult
     
-    member x.errorHandler failure next ctx  =
+    default x.errorHandler failure next ctx  =
         let problem = ProblemReport.failureToProblemReport failure
         let serializedProblem = Encode.Auto.toString(4, problem)
         let errorResponse = clearResponse
